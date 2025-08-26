@@ -1,0 +1,524 @@
+syntax = "proto3";
+
+package product;
+option go_package = ".";
+
+service ProductService {
+  rpc CreateCategory(CreateCategoryRequest) returns (CreatedResponse);
+
+  rpc GetCategoryTree(GetManyRequest) returns (CategoryTreeResponse);
+
+  rpc GetProductBySlug(GetProductBySlugRequest) returns (ProductPublicResponse);
+
+  rpc CreateColor(CreateColorRequest) returns (CreatedResponse);
+
+  rpc CreateSize(CreateSizeRequest) returns (CreatedResponse);
+
+  rpc GetProductsByCategory(GetProductsByCategoryRequest) returns (ProductsPublicResponse);
+
+  rpc CreateTag(CreateTagRequest) returns (CreatedResponse);
+
+  rpc GetAllCategoriesAdmin(GetManyRequest) returns (BaseCategoriesResponse);
+
+  rpc GetCategoryById(GetCategoryByIdRequest) returns (CategoryAdminDetailsResponse);
+
+  rpc UpdateCategory(UpdateCategoryRequest) returns (CategoryAdminDetailsResponse);
+
+  rpc GetAllColorsAdmin(GetManyRequest) returns (ColorsAdminResponse);
+
+  rpc GetAllSizesAdmin(GetManyRequest) returns (SizesAdminResponse);
+
+  rpc GetAllTagsAdmin(GetManyRequest) returns (TagsAdminResponse);
+
+  rpc UpdateTag(UpdateTagRequest) returns (UpdatedResponse);
+
+  rpc GetAllColors(GetManyRequest) returns (ColorsPublicResponse);
+
+  rpc GetAllSizes(GetManyRequest) returns (SizesPublicResponse);
+
+  rpc GetAllTags(GetManyRequest) returns (TagsPublicResponse);
+
+  rpc CreateProduct(CreateProductRequest) returns (CreatedResponse);
+
+  rpc GetCategoriesNoChild(GetManyRequest) returns (BaseCategoriesResponse);
+
+  rpc GetProductById(GetProductByIdRequest) returns (ProductAdminDetailsResponse);
+
+  rpc GetAllProductsAdmin(GetAllProductsAdminRequest) returns (ProductsAdminResponse);
+
+  rpc UpdateProduct(UpdateProductRequest) returns (ProductAdminDetailsResponse);
+
+  rpc DeleteProduct(DeleteOneRequest) returns (DeletedResponse);
+
+  rpc DeleteProducts(DeleteManyRequest) returns (DeletedResponse);
+
+  rpc PermanentlyDeleteCategory(PermanentlyDeleteOneRequest) returns (DeletedResponse);
+
+  rpc PermanentlyDeleteCategories(PermanentlyDeleteManyRequest) returns (DeletedResponse);
+
+  rpc GetCategoriesNoProduct(GetManyRequest) returns (BaseCategoriesResponse);
+
+  rpc UpdateColor(UpdateColorRequest) returns (UpdatedResponse);
+
+  rpc UpdateSize(UpdateSizeRequest) returns (UpdatedResponse);
+
+  rpc DeleteColor(DeleteOneRequest) returns (DeletedResponse);
+
+  rpc DeleteSize(DeleteOneRequest) returns (DeletedResponse);
+
+  rpc DeleteColors(DeleteManyRequest) returns (DeletedResponse);
+
+  rpc DeleteSizes(DeleteManyRequest) returns (DeletedResponse);
+
+  rpc GetDeletedProducts(GetAllProductsAdminRequest) returns (ProductsAdminResponse);
+
+  rpc GetDeletedProductById(GetProductByIdRequest) returns (ProductAdminDetailsResponse);
+
+  rpc GetDeletedColors(GetManyRequest) returns (ColorsAdminResponse);
+
+  rpc GetDeletedSizes(GetManyRequest) returns (SizesAdminResponse);
+
+  rpc GetDeletedTags(GetManyRequest) returns (TagsAdminResponse);
+
+  rpc DeleteTag(DeleteOneRequest) returns (DeletedResponse);
+
+  rpc DeleteTags(DeleteManyRequest) returns (DeletedResponse);
+
+  rpc RestoreProduct(RestoreOneRequest) returns (RestoredResponse);
+
+  rpc RestoreProducts(RestoreManyRequest) returns (RestoredResponse);
+
+  rpc RestoreColor(RestoreOneRequest) returns (RestoredResponse);
+
+  rpc RestoreColors(RestoreManyRequest) returns (RestoredResponse);
+
+  rpc RestoreSize(RestoreOneRequest) returns (RestoredResponse);
+
+  rpc RestoreSizes(RestoreManyRequest) returns (RestoredResponse);
+
+  rpc RestoreTag(RestoreOneRequest) returns (RestoredResponse);
+
+  rpc RestoreTags(RestoreManyRequest) returns (RestoredResponse);
+
+  rpc PermanentlyDeleteProduct(PermanentlyDeleteOneRequest) returns (DeletedResponse);
+
+  rpc PermanentlyDeleteProducts(PermanentlyDeleteManyRequest) returns (DeletedResponse);
+
+  rpc PermanentlyDeleteColor(PermanentlyDeleteOneRequest) returns (DeletedResponse);
+
+  rpc PermanentlyDeleteColors(PermanentlyDeleteManyRequest) returns (DeletedResponse);
+
+  rpc PermanentlyDeleteSize(PermanentlyDeleteOneRequest) returns (DeletedResponse);
+
+  rpc PermanentlyDeleteSizes(PermanentlyDeleteManyRequest) returns (DeletedResponse);
+
+  rpc PermanentlyDeleteTag(PermanentlyDeleteOneRequest) returns (DeletedResponse);
+
+  rpc PermanentlyDeleteTags(PermanentlyDeleteManyRequest) returns (DeletedResponse);
+}
+
+message PaginationMetaResponse {
+  uint32 page = 1;
+  uint32 limit = 2;
+  uint32 total = 3;
+  uint32 total_pages = 4;
+  optional bool has_prev = 5;
+  optional bool has_next = 6;
+}
+
+message GetAllProductsAdminRequest {
+  uint32 page = 1;
+  uint32 limit = 2;
+  string sort = 3;
+  string order = 4;
+  string search = 5;
+  string category_id = 6;
+  optional bool is_active = 7;
+}
+
+message PermanentlyDeleteManyRequest {
+  repeated string ids = 1;
+}
+
+message PermanentlyDeleteOneRequest {
+  string id = 1;
+}
+
+message RestoreManyRequest {
+  repeated string ids = 1;
+  string user_id = 2;
+}
+
+message RestoreOneRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message RestoredResponse {
+  bool success = 1;
+}
+
+message UpdateSizeRequest {
+  string id = 1;
+  string name = 2;
+  string user_id = 3;
+}
+
+message UpdateColorRequest {
+  string id = 1;
+  string name = 2;
+  string user_id = 3;
+}
+
+message GetManyRequest {}
+
+message DeleteOneRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message DeleteManyRequest {
+  repeated string ids = 1;
+  string user_id = 2;
+}
+
+message DeletedResponse {
+  bool success = 1;
+}
+
+message UpdateProductRequest {
+  string id = 1;
+  optional string title = 2;
+  optional string description = 3;
+  optional float price = 4;
+  optional bool is_active = 5;
+  optional bool is_sale = 6;
+  optional float sale_price = 7;
+  optional string start_sale = 8;
+  optional string end_sale = 9;
+  repeated string category_ids = 10;
+  repeated string tag_ids = 11;
+  repeated UpdateImageRequest update_images = 12;
+  repeated CreateImageRequest new_images = 13;
+  repeated string delete_image_ids = 14;
+  repeated UpdateVariantRequest update_variants = 15;
+  repeated CreateVariantRequest new_variants = 16;
+  repeated string delete_variant_ids = 17;
+  string user_id = 18;
+}
+
+message UpdateImageRequest {
+  string id = 1;
+  optional bool is_thumbnail = 2;
+  optional int32 sort_order = 3;
+}
+
+message UpdateVariantRequest {
+  string id = 1;
+  optional string sku = 2;
+  optional string color_id = 3;
+  optional string size_id = 4;
+  optional int64 quantity = 5;
+}
+
+message ProductsAdminResponse {
+  repeated ProductAdminResponse products = 1;
+  PaginationMetaResponse meta = 2;
+}
+
+message SimpleImageResponse {
+  string id = 1;
+  string url = 2;
+}
+
+message ProductAdminResponse {
+  string id = 1;
+  string title = 2;
+  float price = 3;
+  repeated BaseCategoryResponse categories = 4;
+  SimpleImageResponse thumbnail = 5;
+}
+
+message GetProductByIdRequest {
+  string id = 1;
+}
+
+message ProductAdminDetailsResponse {
+  string id = 1;
+  string title = 2;
+  string slug = 3;
+  string description = 4;
+  float price = 5;
+  optional bool is_active = 6;
+  optional bool is_sale = 7;
+  optional float sale_price = 8;
+  optional string start_sale = 9;
+  optional string end_sale = 10;
+  repeated BaseCategoryResponse categories = 11;
+  repeated BaseVariantResponse variants = 12;
+  repeated BaseImageResponse images = 13;
+  repeated BaseTagResponse tags = 14;
+  string created_at = 15;
+  string updated_at = 16;
+  BaseUserResponse created_by = 17;
+  BaseUserResponse updated_by = 18;
+}
+
+message BaseCategoriesResponse {
+  repeated BaseCategoryResponse categories = 1;
+}
+
+message CreateProductRequest {
+  string title = 1;
+  string description = 2;
+  float price = 3;
+  bool is_active = 4;
+  bool is_sale = 5;
+  optional float sale_price = 6;
+  optional string start_sale = 7;
+  optional string end_sale = 8;
+  repeated string category_ids = 9;
+  repeated string tag_ids = 10;
+  repeated CreateVariantRequest variants = 11;
+  repeated CreateImageRequest images = 12;
+  string user_id = 13;
+}
+
+message CreateVariantRequest {
+  string sku = 1;
+  string color_id = 2;
+  string size_id = 3;
+  int64 quantity = 4;
+}
+
+message CreateImageRequest {
+  string color_id = 1;
+  string base64_data = 2;
+  string file_name = 3;
+  bool is_thumbnail = 4;
+  int32 sort_order = 5;
+}
+
+message TagsPublicResponse {
+  repeated BaseTagResponse tags = 1;
+}
+
+message BaseTagResponse {
+  string id = 1;
+  string name = 2;
+}
+
+message SizesPublicResponse {
+  repeated BaseSizeResponse sizes = 1;
+}
+
+message ColorsPublicResponse {
+  repeated BaseColorResponse colors = 1;
+}
+
+message UpdatedResponse {
+  bool success = 1;
+}
+
+message UpdateTagRequest {
+  string id = 1;
+  string name = 2;
+  string user_id = 3;
+}
+
+message TagsAdminResponse {
+  repeated TagAdminResponse tags = 1;
+}
+
+message TagAdminResponse {
+  string id = 1;
+  string name = 2;
+  string created_at = 3;
+  string updated_at = 4;
+  BaseUserResponse created_by = 5;
+  BaseUserResponse updated_by = 6;
+}
+
+message SizesAdminResponse {
+  repeated SizeAdminResponse sizes = 1;
+}
+
+message SizeAdminResponse {
+  string id = 1;
+  string name = 2;
+  string created_at = 3;
+  string updated_at = 4;
+  BaseUserResponse created_by = 5;
+  BaseUserResponse updated_by = 6;
+}
+
+message ColorsAdminResponse {
+  repeated ColorAdminResponse colors = 1;
+}
+
+message ColorAdminResponse {
+  string id = 1;
+  string name = 2;
+  string created_at = 3;
+  string updated_at = 4;
+  BaseUserResponse created_by = 5;
+  BaseUserResponse updated_by = 6;
+}
+
+message UpdateCategoryRequest {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+  repeated string parent_ids = 4;
+  string user_id = 5;
+}
+
+message CategoryAdminDetailsResponse {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+  repeated BaseCategoryResponse parents = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  BaseUserResponse created_by = 7;
+  BaseUserResponse updated_by = 8;
+  repeated BaseProductResponse products = 9;
+}
+
+message BaseProductResponse {
+  string id = 1;
+  string title = 2;
+  string slug = 3;
+  BaseImageResponse image = 4;
+}
+
+message GetCategoryByIdRequest {
+  string id = 1;
+}
+
+message BaseProfileResponse {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+}
+
+message BaseUserResponse {
+  string id = 1;
+  string username = 2;
+  BaseProfileResponse profile = 3;
+}
+
+message CategoryAdminResponse {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+  repeated BaseCategoryResponse parents = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  BaseUserResponse created_by = 7;
+  BaseUserResponse updated_by = 8;
+}
+
+message CreateTagRequest {
+  string name = 1;
+  string user_id = 2;
+}
+
+message GetProductsByCategoryRequest {
+  string slug = 1;
+}
+
+message ProductsPublicResponse {
+  repeated ProductPublicResponse products = 1;
+}
+
+message CreateSizeRequest {
+  string name = 1;
+  string user_id = 2;
+}
+
+message CreateColorRequest {
+  string name = 1;
+  string user_id = 2;
+}
+
+message CreatedResponse {
+  string id = 1;
+}
+
+message GetProductBySlugRequest {
+  string slug = 1;
+}
+
+message ProductPublicResponse {
+  string id = 1;
+  string title = 2;
+  string slug = 3;
+  string description = 4;
+  float price = 5;
+  optional bool is_sale = 6;
+  optional float sale_price = 7;
+  optional string start_sale = 8;
+  optional string end_sale = 9;
+  repeated BaseCategoryResponse categories = 10;
+  repeated BaseVariantResponse variants = 11;
+  repeated BaseImageResponse images = 12;
+}
+
+message BaseImageResponse {
+  string id = 1;
+  BaseColorResponse color = 2;
+  string url = 3;
+  int32 sort_order = 4;
+  optional bool is_thumbnail = 5;
+}
+
+message BaseColorResponse {
+  string id = 1;
+  string name = 2;
+}
+
+message BaseSizeResponse {
+  string id = 1;
+  string name = 2;
+}
+
+message BaseInventoryResponse {
+  string id = 1;
+  int64 quantity = 2;
+  optional int64 sold_quantity = 3;
+  int64 stock = 4;
+  optional bool is_stock = 5;
+}
+
+message BaseVariantResponse {
+  string id = 1;
+  string sku = 2;
+  BaseColorResponse color = 3;
+  BaseSizeResponse size = 4;
+  BaseInventoryResponse inventory = 5;
+}
+
+message CreateCategoryRequest {
+  string name = 1;
+  optional string slug = 2;
+  repeated string parent_ids = 3;
+  string user_id = 4;
+}
+
+message BaseCategoryResponse {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+}
+
+message CategoryPublicResponse {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+  repeated CategoryPublicResponse children = 4;
+}
+
+message CategoryTreeResponse {
+  repeated CategoryPublicResponse categories = 1;
+}
