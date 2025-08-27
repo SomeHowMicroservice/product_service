@@ -8,7 +8,6 @@ import (
 	"github.com/SomeHowMicroservice/shm-be/product/config"
 	"github.com/SomeHowMicroservice/shm-be/product/consumers"
 	"github.com/SomeHowMicroservice/shm-be/product/container"
-	"github.com/SomeHowMicroservice/shm-be/product/imagekit"
 	"github.com/SomeHowMicroservice/shm-be/product/initialization"
 	productpb "github.com/SomeHowMicroservice/shm-be/product/protobuf/product"
 	"google.golang.org/grpc"
@@ -47,9 +46,8 @@ func main() {
 	productContainer := container.NewContainer(cfg, db.Gorm, mqc.Chann, grpcServer, clients.UserClient)
 	productpb.RegisterProductServiceServer(grpcServer, productContainer.GRPCHandler)
 
-	imagekit := imagekit.NewImageKitService(cfg)
-	go consumers.StartUploadImageConsumer(mqc, imagekit, productContainer.ImageRepo)
-	go consumers.StartDeleteImageConsumer(mqc, imagekit)
+	go consumers.StartUploadImageConsumer(mqc, productContainer.ImageKit, productContainer.ImageRepo)
+	go consumers.StartDeleteImageConsumer(mqc, productContainer.ImageKit)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.App.GRPCPort))
 	if err != nil {
@@ -57,8 +55,9 @@ func main() {
 	}
 	defer lis.Close()
 
-	log.Println("Khởi chạy service thành công")
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Serve gRPC thất bại: %v", err)
 	}
+
+	log.Println("Khởi chạy service thành công")
 }
