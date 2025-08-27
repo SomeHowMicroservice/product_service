@@ -1,6 +1,7 @@
 package initialization
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/SomeHowMicroservice/shm-be/product/config"
@@ -20,7 +21,12 @@ var allModels = []interface{}{
 	&model.Tag{},
 }
 
-func InitDB(cfg *config.Config) (*gorm.DB, error) {
+type DB struct {
+	Gorm *gorm.DB
+	sql  *sql.DB
+}
+
+func InitDB(cfg *config.Config) (*DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s dbname=%s user=%s password=%s sslmode=%s channel_binding=%s",
 		cfg.Database.DBHost,
@@ -30,16 +36,28 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 		cfg.Database.DBSSLMode,
 		cfg.Database.DBChannelBinding,
 	)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	gDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("kết nối PostgreSQL thất bại: %w", err)
 	}
 
-	if err := runAutoMigrations(db); err != nil {
+	if err := runAutoMigrations(gDB); err != nil {
 		return nil, fmt.Errorf("chuyển dịch DB thất bại: %w", err)
 	}
 
-	return db, nil
+	sqlDB, err := gDB.DB()
+	if err != nil {
+		return nil, fmt.Errorf("không lấy được sql.DB: %w", err)
+	}
+
+	return &DB{
+		gDB,
+		sqlDB,
+	}, nil
+}
+
+func (d *DB) Close() {
+	_ = d.sql.Close()
 }
 
 func runAutoMigrations(db *gorm.DB) error {
