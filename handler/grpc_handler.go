@@ -40,7 +40,7 @@ func (h *GRPCHandler) CreateCategory(ctx context.Context, req *productpb.CreateC
 	}, nil
 }
 
-func (h *GRPCHandler) GetCategoryTree(ctx context.Context, req *productpb.GetManyRequest) (*productpb.CategoryTreeResponse, error) {
+func (h *GRPCHandler) GetCategoryTree(ctx context.Context, req *productpb.GetAllRequest) (*productpb.CategoryTreeResponse, error) {
 	categoryTree, err := h.svc.GetCategoryTree(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -49,7 +49,7 @@ func (h *GRPCHandler) GetCategoryTree(ctx context.Context, req *productpb.GetMan
 	return toCategoryTreeResponse(categoryTree), nil
 }
 
-func (h *GRPCHandler) GetCategoriesNoProduct(ctx context.Context, req *productpb.GetManyRequest) (*productpb.BaseCategoriesResponse, error) {
+func (h *GRPCHandler) GetCategoriesNoProduct(ctx context.Context, req *productpb.GetAllRequest) (*productpb.BaseCategoriesResponse, error) {
 	categories, err := h.svc.GetCategoriesNoProduct(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -136,7 +136,7 @@ func (h *GRPCHandler) CreateTag(ctx context.Context, req *productpb.CreateTagReq
 	}, nil
 }
 
-func (h *GRPCHandler) GetAllCategoriesAdmin(ctx context.Context, req *productpb.GetManyRequest) (*productpb.BaseCategoriesResponse, error) {
+func (h *GRPCHandler) GetAllCategoriesAdmin(ctx context.Context, req *productpb.GetAllRequest) (*productpb.BaseCategoriesResponse, error) {
 	categories, err := h.svc.GetAllCategories(ctx)
 	if err != nil {
 		switch err {
@@ -152,7 +152,7 @@ func (h *GRPCHandler) GetAllCategoriesAdmin(ctx context.Context, req *productpb.
 	}, nil
 }
 
-func (h *GRPCHandler) GetCategoryById(ctx context.Context, req *productpb.GetCategoryByIdRequest) (*productpb.CategoryAdminDetailsResponse, error) {
+func (h *GRPCHandler) GetCategoryById(ctx context.Context, req *productpb.GetOneRequest) (*productpb.CategoryAdminDetailsResponse, error) {
 	convertedCategory, err := h.svc.GetCategoryByID(ctx, req.Id)
 	if err != nil {
 		switch err {
@@ -180,7 +180,7 @@ func (h *GRPCHandler) UpdateCategory(ctx context.Context, req *productpb.UpdateC
 	return convertedCategory, nil
 }
 
-func (h *GRPCHandler) GetAllColorsAdmin(ctx context.Context, req *productpb.GetManyRequest) (*productpb.ColorsAdminResponse, error) {
+func (h *GRPCHandler) GetAllColorsAdmin(ctx context.Context, req *productpb.GetAllRequest) (*productpb.ColorsAdminResponse, error) {
 	convertedColors, err := h.svc.GetAllColorsAdmin(ctx)
 	if err != nil {
 		switch err {
@@ -194,7 +194,7 @@ func (h *GRPCHandler) GetAllColorsAdmin(ctx context.Context, req *productpb.GetM
 	return convertedColors, nil
 }
 
-func (h *GRPCHandler) GetAllColors(ctx context.Context, req *productpb.GetManyRequest) (*productpb.ColorsPublicResponse, error) {
+func (h *GRPCHandler) GetAllColors(ctx context.Context, req *productpb.GetAllRequest) (*productpb.ColorsPublicResponse, error) {
 	colors, err := h.svc.GetAllColors(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -203,7 +203,7 @@ func (h *GRPCHandler) GetAllColors(ctx context.Context, req *productpb.GetManyRe
 	return toColorsPublicResponse(colors), nil
 }
 
-func (h *GRPCHandler) GetAllSizesAdmin(ctx context.Context, req *productpb.GetManyRequest) (*productpb.SizesAdminResponse, error) {
+func (h *GRPCHandler) GetAllSizesAdmin(ctx context.Context, req *productpb.GetAllRequest) (*productpb.SizesAdminResponse, error) {
 	convertedSizes, err := h.svc.GetAllSizesAdmin(ctx)
 	if err != nil {
 		switch err {
@@ -217,7 +217,7 @@ func (h *GRPCHandler) GetAllSizesAdmin(ctx context.Context, req *productpb.GetMa
 	return convertedSizes, nil
 }
 
-func (h *GRPCHandler) GetAllSizes(ctx context.Context, req *productpb.GetManyRequest) (*productpb.SizesPublicResponse, error) {
+func (h *GRPCHandler) GetAllSizes(ctx context.Context, req *productpb.GetAllRequest) (*productpb.SizesPublicResponse, error) {
 	sizes, err := h.svc.GetAllSizes(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -226,7 +226,7 @@ func (h *GRPCHandler) GetAllSizes(ctx context.Context, req *productpb.GetManyReq
 	return toSizesPublicResponse(sizes), nil
 }
 
-func (h *GRPCHandler) GetAllTagsAdmin(ctx context.Context, req *productpb.GetManyRequest) (*productpb.TagsAdminResponse, error) {
+func (h *GRPCHandler) GetAllTagsAdmin(ctx context.Context, req *productpb.GetAllRequest) (*productpb.TagsAdminResponse, error) {
 	convertedTags, err := h.svc.GetAllTagsAdmin(ctx)
 	if err != nil {
 		switch err {
@@ -240,7 +240,7 @@ func (h *GRPCHandler) GetAllTagsAdmin(ctx context.Context, req *productpb.GetMan
 	return convertedTags, nil
 }
 
-func (h *GRPCHandler) GetAllTags(ctx context.Context, req *productpb.GetManyRequest) (*productpb.TagsPublicResponse, error) {
+func (h *GRPCHandler) GetAllTags(ctx context.Context, req *productpb.GetAllRequest) (*productpb.TagsPublicResponse, error) {
 	tags, err := h.svc.GetAllTags(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -294,7 +294,7 @@ func (h *GRPCHandler) CreateProduct(ctx context.Context, req *productpb.CreatePr
 	}, nil
 }
 
-func (h *GRPCHandler) GetCategoriesNoChild(ctx context.Context, req *productpb.GetManyRequest) (*productpb.BaseCategoriesResponse, error) {
+func (h *GRPCHandler) GetCategoriesNoChild(ctx context.Context, req *productpb.GetAllRequest) (*productpb.BaseCategoriesResponse, error) {
 	categories, err := h.svc.GetCategoriesNoChild(ctx)
 	if err != nil {
 		switch err {
@@ -310,7 +310,7 @@ func (h *GRPCHandler) GetCategoriesNoChild(ctx context.Context, req *productpb.G
 	}, nil
 }
 
-func (h *GRPCHandler) GetProductById(ctx context.Context, req *productpb.GetProductByIdRequest) (*productpb.ProductAdminDetailsResponse, error) {
+func (h *GRPCHandler) GetProductById(ctx context.Context, req *productpb.GetOneRequest) (*productpb.ProductAdminDetailsResponse, error) {
 	convertedProduct, err := h.svc.GetProductByID(ctx, req.Id)
 	if err != nil {
 		switch err {
@@ -512,7 +512,7 @@ func (h *GRPCHandler) GetDeletedProducts(ctx context.Context, req *productpb.Get
 	return toProductsAdminResponse(products, meta), nil
 }
 
-func (h *GRPCHandler) GetDeletedProductById(ctx context.Context, req *productpb.GetProductByIdRequest) (*productpb.ProductAdminDetailsResponse, error) {
+func (h *GRPCHandler) GetDeletedProductById(ctx context.Context, req *productpb.GetOneRequest) (*productpb.ProductAdminDetailsResponse, error) {
 	convertedProduct, err := h.svc.GetDeletedProductByID(ctx, req.Id)
 	if err != nil {
 		switch err {
@@ -526,7 +526,7 @@ func (h *GRPCHandler) GetDeletedProductById(ctx context.Context, req *productpb.
 	return convertedProduct, nil
 }
 
-func (h *GRPCHandler) GetDeletedColors(ctx context.Context, req *productpb.GetManyRequest) (*productpb.ColorsAdminResponse, error) {
+func (h *GRPCHandler) GetDeletedColors(ctx context.Context, req *productpb.GetAllRequest) (*productpb.ColorsAdminResponse, error) {
 	convertedColors, err := h.svc.GetDeletedColors(ctx)
 	if err != nil {
 		switch err {
@@ -540,7 +540,7 @@ func (h *GRPCHandler) GetDeletedColors(ctx context.Context, req *productpb.GetMa
 	return convertedColors, nil
 }
 
-func (h *GRPCHandler) GetDeletedSizes(ctx context.Context, req *productpb.GetManyRequest) (*productpb.SizesAdminResponse, error) {
+func (h *GRPCHandler) GetDeletedSizes(ctx context.Context, req *productpb.GetAllRequest) (*productpb.SizesAdminResponse, error) {
 	convertedSizes, err := h.svc.GetDeletedSizes(ctx)
 	if err != nil {
 		switch err {
@@ -554,7 +554,7 @@ func (h *GRPCHandler) GetDeletedSizes(ctx context.Context, req *productpb.GetMan
 	return convertedSizes, nil
 }
 
-func (h *GRPCHandler) GetDeletedTags(ctx context.Context, req *productpb.GetManyRequest) (*productpb.TagsAdminResponse, error) {
+func (h *GRPCHandler) GetDeletedTags(ctx context.Context, req *productpb.GetAllRequest) (*productpb.TagsAdminResponse, error) {
 	convertedTags, err := h.svc.GetDeletedTags(ctx)
 	if err != nil {
 		switch err {

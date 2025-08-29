@@ -6,7 +6,7 @@ option go_package = ".";
 service ProductService {
   rpc CreateCategory(CreateCategoryRequest) returns (CreatedResponse);
 
-  rpc GetCategoryTree(GetManyRequest) returns (CategoryTreeResponse);
+  rpc GetCategoryTree(GetAllRequest) returns (CategoryTreeResponse);
 
   rpc GetProductBySlug(GetProductBySlugRequest) returns (ProductPublicResponse);
 
@@ -18,31 +18,31 @@ service ProductService {
 
   rpc CreateTag(CreateTagRequest) returns (CreatedResponse);
 
-  rpc GetAllCategoriesAdmin(GetManyRequest) returns (BaseCategoriesResponse);
+  rpc GetAllCategoriesAdmin(GetAllRequest) returns (BaseCategoriesResponse);
 
-  rpc GetCategoryById(GetCategoryByIdRequest) returns (CategoryAdminDetailsResponse);
+  rpc GetCategoryById(GetOneRequest) returns (CategoryAdminDetailsResponse);
 
   rpc UpdateCategory(UpdateCategoryRequest) returns (CategoryAdminDetailsResponse);
 
-  rpc GetAllColorsAdmin(GetManyRequest) returns (ColorsAdminResponse);
+  rpc GetAllColorsAdmin(GetAllRequest) returns (ColorsAdminResponse);
 
-  rpc GetAllSizesAdmin(GetManyRequest) returns (SizesAdminResponse);
+  rpc GetAllSizesAdmin(GetAllRequest) returns (SizesAdminResponse);
 
-  rpc GetAllTagsAdmin(GetManyRequest) returns (TagsAdminResponse);
+  rpc GetAllTagsAdmin(GetAllRequest) returns (TagsAdminResponse);
 
   rpc UpdateTag(UpdateTagRequest) returns (UpdatedResponse);
 
-  rpc GetAllColors(GetManyRequest) returns (ColorsPublicResponse);
+  rpc GetAllColors(GetAllRequest) returns (ColorsPublicResponse);
 
-  rpc GetAllSizes(GetManyRequest) returns (SizesPublicResponse);
+  rpc GetAllSizes(GetAllRequest) returns (SizesPublicResponse);
 
-  rpc GetAllTags(GetManyRequest) returns (TagsPublicResponse);
+  rpc GetAllTags(GetAllRequest) returns (TagsPublicResponse);
 
   rpc CreateProduct(CreateProductRequest) returns (CreatedResponse);
 
-  rpc GetCategoriesNoChild(GetManyRequest) returns (BaseCategoriesResponse);
+  rpc GetCategoriesNoChild(GetAllRequest) returns (BaseCategoriesResponse);
 
-  rpc GetProductById(GetProductByIdRequest) returns (ProductAdminDetailsResponse);
+  rpc GetProductById(GetOneRequest) returns (ProductAdminDetailsResponse);
 
   rpc GetAllProductsAdmin(GetAllProductsAdminRequest) returns (ProductsAdminResponse);
 
@@ -56,7 +56,7 @@ service ProductService {
 
   rpc PermanentlyDeleteCategories(PermanentlyDeleteManyRequest) returns (DeletedResponse);
 
-  rpc GetCategoriesNoProduct(GetManyRequest) returns (BaseCategoriesResponse);
+  rpc GetCategoriesNoProduct(GetAllRequest) returns (BaseCategoriesResponse);
 
   rpc UpdateColor(UpdateColorRequest) returns (UpdatedResponse);
 
@@ -72,13 +72,13 @@ service ProductService {
 
   rpc GetDeletedProducts(GetAllProductsAdminRequest) returns (ProductsAdminResponse);
 
-  rpc GetDeletedProductById(GetProductByIdRequest) returns (ProductAdminDetailsResponse);
+  rpc GetDeletedProductById(GetOneRequest) returns (ProductAdminDetailsResponse);
 
-  rpc GetDeletedColors(GetManyRequest) returns (ColorsAdminResponse);
+  rpc GetDeletedColors(GetAllRequest) returns (ColorsAdminResponse);
 
-  rpc GetDeletedSizes(GetManyRequest) returns (SizesAdminResponse);
+  rpc GetDeletedSizes(GetAllRequest) returns (SizesAdminResponse);
 
-  rpc GetDeletedTags(GetManyRequest) returns (TagsAdminResponse);
+  rpc GetDeletedTags(GetAllRequest) returns (TagsAdminResponse);
 
   rpc DeleteTag(DeleteOneRequest) returns (DeletedResponse);
 
@@ -170,7 +170,7 @@ message UpdateColorRequest {
   string user_id = 3;
 }
 
-message GetManyRequest {}
+message GetAllRequest {}
 
 message DeleteOneRequest {
   string id = 1;
@@ -239,7 +239,7 @@ message ProductAdminResponse {
   SimpleImageResponse thumbnail = 5;
 }
 
-message GetProductByIdRequest {
+message GetOneRequest {
   string id = 1;
 }
 
@@ -390,10 +390,6 @@ message BaseProductResponse {
   string title = 2;
   string slug = 3;
   BaseImageResponse image = 4;
-}
-
-message GetCategoryByIdRequest {
-  string id = 1;
 }
 
 message BaseProfileResponse {

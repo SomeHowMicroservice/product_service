@@ -256,14 +256,24 @@ func (s *productServiceImpl) GetCategoryByID(ctx context.Context, categoryID str
 		return nil, common.ErrCategoryNotFound
 	}
 
-	cRes, err := s.userClient.GetUserById(ctx, &userpb.GetUserByIdRequest{
-		Id: category.CreatedByID,
+	userIDMap := map[string]struct{}{}
+	userIDMap[category.CreatedByID] = struct{}{}
+	userIDMap[category.UpdatedByID] = struct{}{}
+
+	var userIDs []string
+	for id := range userIDMap {
+		userIDs = append(userIDs, id)
+	}
+
+	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+		Ids: userIDs,
 	})
 	if err != nil {
-		if st, ok := status.FromError(err); ok {
+		st, ok := status.FromError(err)
+		if ok {
 			switch st.Code() {
 			case codes.NotFound:
-				return nil, common.ErrUserNotFound
+				return nil, common.ErrHasUserNotFound
 			default:
 				return nil, fmt.Errorf("lỗi từ user service: %s", st.Message())
 			}
@@ -271,21 +281,13 @@ func (s *productServiceImpl) GetCategoryByID(ctx context.Context, categoryID str
 		return nil, fmt.Errorf("lỗi không xác định: %w", err)
 	}
 
-	uRes, err := s.userClient.GetUserById(ctx, &userpb.GetUserByIdRequest{
-		Id: category.CreatedByID,
-	})
-	if err != nil {
-		if st, ok := status.FromError(err); ok {
-			switch st.Code() {
-			case codes.NotFound:
-				return nil, common.ErrUserNotFound
-			default:
-				return nil, fmt.Errorf("lỗi từ user service: %s", st.Message())
-			}
-		}
-		return nil, fmt.Errorf("lỗi không xác định: %w", err)
+	userMap := make(map[string]*userpb.UserPublicResponse)
+	for _, user := range userRes.Users {
+		userMap[user.Id] = user
 	}
 
+	cRes := userMap[category.CreatedByID] 
+	uRes := userMap[category.UpdatedByID]
 	productResponses := toBaseProductResponse(category)
 
 	return toCategoryAdminDetailsResponse(category, productResponses, cRes, uRes), nil
@@ -360,14 +362,24 @@ func (s *productServiceImpl) UpdateCategory(ctx context.Context, req *productpb.
 		return nil, common.ErrCategoryNotFound
 	}
 
-	cRes, err := s.userClient.GetUserById(ctx, &userpb.GetUserByIdRequest{
-		Id: category.CreatedByID,
+	userIDMap := map[string]struct{}{}
+	userIDMap[category.CreatedByID] = struct{}{}
+	userIDMap[category.UpdatedByID] = struct{}{}
+
+	var userIDs []string
+	for id := range userIDMap {
+		userIDs = append(userIDs, id)
+	}
+
+	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+		Ids: userIDs,
 	})
 	if err != nil {
-		if st, ok := status.FromError(err); ok {
+		st, ok := status.FromError(err)
+		if ok {
 			switch st.Code() {
 			case codes.NotFound:
-				return nil, common.ErrUserNotFound
+				return nil, common.ErrHasUserNotFound
 			default:
 				return nil, fmt.Errorf("lỗi từ user service: %s", st.Message())
 			}
@@ -375,20 +387,13 @@ func (s *productServiceImpl) UpdateCategory(ctx context.Context, req *productpb.
 		return nil, fmt.Errorf("lỗi không xác định: %w", err)
 	}
 
-	uRes, err := s.userClient.GetUserById(ctx, &userpb.GetUserByIdRequest{
-		Id: category.CreatedByID,
-	})
-	if err != nil {
-		if st, ok := status.FromError(err); ok {
-			switch st.Code() {
-			case codes.NotFound:
-				return nil, common.ErrUserNotFound
-			default:
-				return nil, fmt.Errorf("lỗi từ user service: %s", st.Message())
-			}
-		}
-		return nil, fmt.Errorf("lỗi không xác định: %w", err)
+	userMap := make(map[string]*userpb.UserPublicResponse)
+	for _, user := range userRes.Users {
+		userMap[user.Id] = user
 	}
+
+	cRes := userMap[category.CreatedByID] 
+	uRes := userMap[category.UpdatedByID]
 
 	productResponses := toBaseProductResponse(category)
 
@@ -412,7 +417,7 @@ func (s *productServiceImpl) GetAllColorsAdmin(ctx context.Context) (*productpb.
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetUsersByIdRequest{
+	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -483,7 +488,7 @@ func (s *productServiceImpl) GetAllSizesAdmin(ctx context.Context) (*productpb.S
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetUsersByIdRequest{
+	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -554,7 +559,7 @@ func (s *productServiceImpl) GetAllTagsAdmin(ctx context.Context) (*productpb.Ta
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetUsersByIdRequest{
+	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -862,7 +867,7 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 		if ext == "" {
 			ext = ".jpg"
 		}
-		
+
 		fileName := fmt.Sprintf("%s-%s_%d%s", product.Slug, img.ColorId, img.SortOrder, ext)
 
 		image := &model.Image{
@@ -912,14 +917,24 @@ func (s *productServiceImpl) GetProductByID(ctx context.Context, productID strin
 		return nil, common.ErrProductNotFound
 	}
 
-	cRes, err := s.userClient.GetUserById(ctx, &userpb.GetUserByIdRequest{
-		Id: product.CreatedByID,
+	userIDMap := map[string]struct{}{}
+	userIDMap[product.CreatedByID] = struct{}{}
+	userIDMap[product.UpdatedByID] = struct{}{}
+
+	var userIDs []string
+	for id := range userIDMap {
+		userIDs = append(userIDs, id)
+	}
+
+	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+		Ids: userIDs,
 	})
 	if err != nil {
-		if st, ok := status.FromError(err); ok {
+		st, ok := status.FromError(err)
+		if ok {
 			switch st.Code() {
 			case codes.NotFound:
-				return nil, common.ErrUserNotFound
+				return nil, common.ErrHasUserNotFound
 			default:
 				return nil, fmt.Errorf("lỗi từ user service: %s", st.Message())
 			}
@@ -927,20 +942,13 @@ func (s *productServiceImpl) GetProductByID(ctx context.Context, productID strin
 		return nil, fmt.Errorf("lỗi không xác định: %w", err)
 	}
 
-	uRes, err := s.userClient.GetUserById(ctx, &userpb.GetUserByIdRequest{
-		Id: product.CreatedByID,
-	})
-	if err != nil {
-		if st, ok := status.FromError(err); ok {
-			switch st.Code() {
-			case codes.NotFound:
-				return nil, common.ErrUserNotFound
-			default:
-				return nil, fmt.Errorf("lỗi từ user service: %s", st.Message())
-			}
-		}
-		return nil, fmt.Errorf("lỗi không xác định: %w", err)
+	userMap := make(map[string]*userpb.UserPublicResponse)
+	for _, user := range userRes.Users {
+		userMap[user.Id] = user
 	}
+
+	cRes := userMap[product.CreatedByID] 
+	uRes := userMap[product.UpdatedByID]
 
 	return toProductAdminDetailsResponse(product, cRes, uRes), nil
 }
@@ -1274,14 +1282,24 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 		return nil, common.ErrProductNotFound
 	}
 
-	cRes, err := s.userClient.GetUserById(ctx, &userpb.GetUserByIdRequest{
-		Id: product.CreatedByID,
+	userIDMap := map[string]struct{}{}
+	userIDMap[product.CreatedByID] = struct{}{}
+	userIDMap[product.UpdatedByID] = struct{}{}
+
+	var userIDs []string
+	for id := range userIDMap {
+		userIDs = append(userIDs, id)
+	}
+
+	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+		Ids: userIDs,
 	})
 	if err != nil {
-		if st, ok := status.FromError(err); ok {
+		st, ok := status.FromError(err)
+		if ok {
 			switch st.Code() {
 			case codes.NotFound:
-				return nil, common.ErrUserNotFound
+				return nil, common.ErrHasUserNotFound
 			default:
 				return nil, fmt.Errorf("lỗi từ user service: %s", st.Message())
 			}
@@ -1289,20 +1307,13 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 		return nil, fmt.Errorf("lỗi không xác định: %w", err)
 	}
 
-	uRes, err := s.userClient.GetUserById(ctx, &userpb.GetUserByIdRequest{
-		Id: product.CreatedByID,
-	})
-	if err != nil {
-		if st, ok := status.FromError(err); ok {
-			switch st.Code() {
-			case codes.NotFound:
-				return nil, common.ErrUserNotFound
-			default:
-				return nil, fmt.Errorf("lỗi từ user service: %s", st.Message())
-			}
-		}
-		return nil, fmt.Errorf("lỗi không xác định: %w", err)
+	userMap := make(map[string]*userpb.UserPublicResponse)
+	for _, user := range userRes.Users {
+		userMap[user.Id] = user
 	}
+
+	cRes := userMap[product.CreatedByID] 
+	uRes := userMap[product.UpdatedByID]
 
 	return toProductAdminDetailsResponse(product, cRes, uRes), nil
 }
@@ -1492,14 +1503,24 @@ func (s *productServiceImpl) GetDeletedProductByID(ctx context.Context, productI
 		return nil, common.ErrProductNotFound
 	}
 
-	cRes, err := s.userClient.GetUserById(ctx, &userpb.GetUserByIdRequest{
-		Id: product.CreatedByID,
+	userIDMap := map[string]struct{}{}
+	userIDMap[product.CreatedByID] = struct{}{}
+	userIDMap[product.UpdatedByID] = struct{}{}
+
+	var userIDs []string
+	for id := range userIDMap {
+		userIDs = append(userIDs, id)
+	}
+
+	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+		Ids: userIDs,
 	})
 	if err != nil {
-		if st, ok := status.FromError(err); ok {
+		st, ok := status.FromError(err)
+		if ok {
 			switch st.Code() {
 			case codes.NotFound:
-				return nil, common.ErrUserNotFound
+				return nil, common.ErrHasUserNotFound
 			default:
 				return nil, fmt.Errorf("lỗi từ user service: %s", st.Message())
 			}
@@ -1507,20 +1528,13 @@ func (s *productServiceImpl) GetDeletedProductByID(ctx context.Context, productI
 		return nil, fmt.Errorf("lỗi không xác định: %w", err)
 	}
 
-	uRes, err := s.userClient.GetUserById(ctx, &userpb.GetUserByIdRequest{
-		Id: product.CreatedByID,
-	})
-	if err != nil {
-		if st, ok := status.FromError(err); ok {
-			switch st.Code() {
-			case codes.NotFound:
-				return nil, common.ErrUserNotFound
-			default:
-				return nil, fmt.Errorf("lỗi từ user service: %s", st.Message())
-			}
-		}
-		return nil, fmt.Errorf("lỗi không xác định: %w", err)
+	userMap := make(map[string]*userpb.UserPublicResponse)
+	for _, user := range userRes.Users {
+		userMap[user.Id] = user
 	}
+
+	cRes := userMap[product.CreatedByID] 
+	uRes := userMap[product.UpdatedByID]
 
 	return toProductAdminDetailsResponse(product, cRes, uRes), nil
 }
@@ -1542,7 +1556,7 @@ func (s *productServiceImpl) GetDeletedColors(ctx context.Context) (*productpb.C
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetUsersByIdRequest{
+	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -1613,7 +1627,7 @@ func (s *productServiceImpl) GetDeletedSizes(ctx context.Context) (*productpb.Si
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetUsersByIdRequest{
+	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -1684,7 +1698,7 @@ func (s *productServiceImpl) GetDeletedTags(ctx context.Context) (*productpb.Tag
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetUsersByIdRequest{
+	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -2173,7 +2187,7 @@ func getIDsFromCategories(categories []*model.Category) []string {
 	return categoryIDs
 }
 
-func toProductAdminDetailsResponse(product *model.Product, cRes *userpb.UserResponse, uRes *userpb.UserResponse) *productpb.ProductAdminDetailsResponse {
+func toProductAdminDetailsResponse(product *model.Product, cRes *userpb.UserPublicResponse, uRes *userpb.UserPublicResponse) *productpb.ProductAdminDetailsResponse {
 	var startSalePtr, endSalePtr *string
 	if product.StartSale != nil {
 		formatted := product.StartSale.Format("2006-01-02")
@@ -2283,7 +2297,7 @@ func toBaseImagesResponse(images []*model.Image) []*productpb.BaseImageResponse 
 	return imageResponses
 }
 
-func toCategoryAdminDetailsResponse(category *model.Category, productResponses []*productpb.BaseProductResponse, cRes *userpb.UserResponse, uRes *userpb.UserResponse) *productpb.CategoryAdminDetailsResponse {
+func toCategoryAdminDetailsResponse(category *model.Category, productResponses []*productpb.BaseProductResponse, cRes *userpb.UserPublicResponse, uRes *userpb.UserPublicResponse) *productpb.CategoryAdminDetailsResponse {
 	return &productpb.CategoryAdminDetailsResponse{
 		Id:        category.ID,
 		Name:      category.Name,
