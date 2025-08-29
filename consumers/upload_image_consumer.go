@@ -28,10 +28,15 @@ func StartUploadImageConsumer(mqc *initialization.MQConnection, imagekit imageki
 		log.Printf("Tải lên hình ảnh thành công: %s", res.URL)
 
 		fileID := res.FileID
-		if err = imageRepo.UpdateFileID(ctx, imageMsg.ImageID, fileID); err != nil {
+		url := res.URL
+		updateData := map[string]interface{}{
+			"file_id": fileID,
+			"url": url,
+		}
+		if err = imageRepo.Update(ctx, imageMsg.ImageID, updateData); err != nil {
 			return err
 		}
-		log.Printf("Cập nhật ảnh có FileID: %s thành công", fileID)
+		log.Printf("Cập nhật ảnh có FileID: %s và url: %s thành công", fileID, url)
 		
 		return nil
 	}); err != nil {

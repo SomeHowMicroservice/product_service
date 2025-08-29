@@ -1,8 +1,6 @@
 package model
 
-import (
-	"time"
-)
+import "time"
 
 type Tag struct {
 	ID          string    `gorm:"type:char(36);primaryKey" json:"id"`

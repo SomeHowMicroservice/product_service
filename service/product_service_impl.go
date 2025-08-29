@@ -862,14 +862,13 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 		if ext == "" {
 			ext = ".jpg"
 		}
+		
 		fileName := fmt.Sprintf("%s-%s_%d%s", product.Slug, img.ColorId, img.SortOrder, ext)
 
-		imageUrl := fmt.Sprintf("%s/%s/%s", s.cfg.ImageKit.URLEndpoint, s.cfg.ImageKit.Folder, fileName)
 		image := &model.Image{
 			ID:          uuid.NewString(),
 			ProductID:   product.ID,
 			ColorID:     img.ColorId,
-			Url:         imageUrl,
 			IsThumbnail: img.IsThumbnail,
 			SortOrder:   int(img.SortOrder),
 		}
