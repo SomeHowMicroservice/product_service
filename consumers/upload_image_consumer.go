@@ -19,7 +19,7 @@ func StartUploadImageConsumer(mqc *initialization.MQConnection, imagekit imageki
 		if err := json.Unmarshal(body, &imageMsg); err != nil {
 			return fmt.Errorf("unmarshal json thất bại: %w", err)
 		}
-		
+
 		ctx := context.Background()
 		res, err := imagekit.UploadFromBase64(ctx, &imageMsg)
 		if err != nil {
@@ -31,13 +31,13 @@ func StartUploadImageConsumer(mqc *initialization.MQConnection, imagekit imageki
 		url := res.URL
 		updateData := map[string]interface{}{
 			"file_id": fileID,
-			"url": url,
+			"url":     url,
 		}
 		if err = imageRepo.Update(ctx, imageMsg.ImageID, updateData); err != nil {
 			return err
 		}
 		log.Printf("Cập nhật ảnh có FileID: %s và url: %s thành công", fileID, url)
-		
+
 		return nil
 	}); err != nil {
 		log.Printf("Lỗi khởi tạo upload image consumer: %v", err)
