@@ -48,7 +48,7 @@ func (r *sizeRepositoryImpl) ExistsByID(ctx context.Context, id string) (bool, e
 	return count > 0, nil
 }
 
-func (r *sizeRepositoryImpl) Update(ctx context.Context, id string, updateData map[string]interface{}) error {
+func (r *sizeRepositoryImpl) Update(ctx context.Context, id string, updateData map[string]any) error {
 	result := r.db.WithContext(ctx).Model(&model.Size{}).Where("id = ?", id).Updates(updateData)
 	if result.Error != nil {
 		return result.Error
@@ -60,7 +60,7 @@ func (r *sizeRepositoryImpl) Update(ctx context.Context, id string, updateData m
 	return nil
 }
 
-func (r *sizeRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error {
+func (r *sizeRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
 	if err := tx.WithContext(ctx).Model(&model.Size{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (r *sizeRepositoryImpl) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *sizeRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]interface{}) error {
+func (r *sizeRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error {
 	if err := r.db.WithContext(ctx).Model(&model.Size{}).Where("id IN ?", ids).Updates(updateData).Error; err != nil {
 		return err
 	}

@@ -33,13 +33,13 @@ type ProductRepository interface {
 
 	UpdateTagsTx(ctx context.Context, tx *gorm.DB, product *model.Product, tags []*model.Tag) error
 
-	Update(ctx context.Context, id string, updateData map[string]interface{}) error
+	Update(ctx context.Context, id string, updateData map[string]any) error
 
-	UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error
+	UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error
 
 	FindAllByID(ctx context.Context, ids []string) ([]*model.Product, error)
 
-	UpdateAllByID(ctx context.Context, ids []string, updateData map[string]interface{}) error
+	UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error
 
 	FindAllDeletedPaginatedWithCategoriesAndThumbnail(ctx context.Context, query *common.PaginationQuery) ([]*model.Product, int64, error)
 

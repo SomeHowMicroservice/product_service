@@ -7,5 +7,5 @@ import (
 )
 
 type InventoryRepository interface {
-	UpdateByVariantIDTx(ctx context.Context, tx *gorm.DB, variantID string, updateData map[string]interface{}) error
+	UpdateByVariantIDTx(ctx context.Context, tx *gorm.DB, variantID string, updateData map[string]any) error
 }

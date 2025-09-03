@@ -41,7 +41,7 @@ func (r *imageRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]
 	return images, nil
 }
 
-func (r *imageRepositoryImpl) Update(ctx context.Context, id string, updateData map[string]interface{}) error {
+func (r *imageRepositoryImpl) Update(ctx context.Context, id string, updateData map[string]any) error {
 	result := r.db.WithContext(ctx).Model(&model.Image{}).Where("id = ?", id).Updates(updateData)
 	if result.Error != nil {
 		return result.Error
@@ -53,7 +53,7 @@ func (r *imageRepositoryImpl) Update(ctx context.Context, id string, updateData 
 	return nil
 }
 
-func (r *imageRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error {
+func (r *imageRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
 	if err := tx.WithContext(ctx).Model(&model.Image{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
 		return err
 	}

@@ -14,9 +14,9 @@ type ImageRepository interface {
 
 	FindAllByID(ctx context.Context, ids []string) ([]*model.Image, error)
 
-	Update(ctx context.Context, id string, updateData map[string]interface{}) error
+	Update(ctx context.Context, id string, updateData map[string]any) error
 
-	UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error
+	UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error
 
 	DeleteAllByID(ctx context.Context, ids []string) error
 

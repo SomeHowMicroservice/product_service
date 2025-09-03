@@ -20,13 +20,13 @@ type ColorRepository interface {
 
 	FindByIDTx(ctx context.Context, tx *gorm.DB, id string) (*model.Color, error)
 
-	Update(ctx context.Context, id string, updateData map[string]interface{}) error
+	Update(ctx context.Context, id string, updateData map[string]any) error
 
-	UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error
+	UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error
 
 	FindAllByID(ctx context.Context, ids []string) ([]*model.Color, error)
 
-	UpdateAllByID(ctx context.Context, ids []string, updateData map[string]interface{}) error
+	UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error
 
 	FindAllDeletedByID(ctx context.Context, ids []string) ([]*model.Color, error)
 

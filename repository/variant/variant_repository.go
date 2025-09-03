@@ -16,7 +16,7 @@ type VariantRepository interface {
 
 	FindAllByID(ctx context.Context, ids []string) ([]*model.Variant, error)
 
-	UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error
+	UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error
 
 	DeleteAllByIDTx(ctx context.Context, tx *gorm.DB, ids []string) error
 }

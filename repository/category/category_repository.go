@@ -30,7 +30,7 @@ type CategoryRepository interface {
 
 	FindByIDWithParentsAndProducts(ctx context.Context, id string) (*model.Category, error)
 
-	UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error
+	UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error
 
 	FindByIDWithParents(ctx context.Context, id string) (*model.Category, error)
 

@@ -79,7 +79,7 @@ func (r *categoryRepositoryImpl) FindByIDWithParentsAndProducts(ctx context.Cont
 		&common.Preload{Relation: "Products.Images", Scope: getThumbnail})
 }
 
-func (r *categoryRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error {
+func (r *categoryRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
 	if err := tx.WithContext(ctx).Model(&model.Category{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
 		return err
 	}

@@ -49,7 +49,7 @@ func (r *variantRepositoryImpl) FindAllByID(ctx context.Context, ids []string) (
 	return variants, nil
 }
 
-func (r *variantRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error {
+func (r *variantRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
 	if err := tx.WithContext(ctx).Model(&model.Variant{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
 		return err
 	}

@@ -16,7 +16,7 @@ func NewInventoryRepository(db *gorm.DB) InventoryRepository {
 	return &inventoryRepositoryImpl{db}
 }
 
-func (r *inventoryRepositoryImpl) UpdateByVariantIDTx(ctx context.Context, tx *gorm.DB, variantID string, updateData map[string]interface{}) error {
+func (r *inventoryRepositoryImpl) UpdateByVariantIDTx(ctx context.Context, tx *gorm.DB, variantID string, updateData map[string]any) error {
 	result := tx.WithContext(ctx).Model(&model.Inventory{}).Where("variant_id = ?", variantID).Updates(updateData)
 	if result.Error != nil {
 		return result.Error

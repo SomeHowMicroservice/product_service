@@ -144,7 +144,7 @@ func (r *productRepositoryImpl) UpdateTagsTx(ctx context.Context, tx *gorm.DB, p
 	return nil
 }
 
-func (r *productRepositoryImpl) Update(ctx context.Context, id string, updateData map[string]interface{}) error {
+func (r *productRepositoryImpl) Update(ctx context.Context, id string, updateData map[string]any) error {
 	result := r.db.WithContext(ctx).Model(&model.Product{}).Where("id = ?", id).Updates(updateData)
 	if result.Error != nil {
 		return result.Error
@@ -156,7 +156,7 @@ func (r *productRepositoryImpl) Update(ctx context.Context, id string, updateDat
 	return nil
 }
 
-func (r *productRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error {
+func (r *productRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
 	if err := tx.WithContext(ctx).Model(&model.Product{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func (r *productRepositoryImpl) FindAllByID(ctx context.Context, ids []string) (
 	return r.findAllByIDBase(ctx, ids, false)
 }
 
-func (r *productRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]interface{}) error {
+func (r *productRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error {
 	if err := r.db.WithContext(ctx).Model(&model.Product{}).Where("id IN ?", ids).Updates(updateData).Error; err != nil {
 		return err
 	}

@@ -102,7 +102,7 @@ func (r *colorRepositoryImpl) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *colorRepositoryImpl) Update(ctx context.Context, id string, updateData map[string]interface{}) error {
+func (r *colorRepositoryImpl) Update(ctx context.Context, id string, updateData map[string]any) error {
 	result := r.db.WithContext(ctx).Model(&model.Color{}).Where("id = ?", id).Updates(updateData)
 	if result.Error != nil {
 		return result.Error
@@ -114,7 +114,7 @@ func (r *colorRepositoryImpl) Update(ctx context.Context, id string, updateData 
 	return nil
 }
 
-func (r *colorRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error {
+func (r *colorRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
 	if err := tx.WithContext(ctx).Model(&model.Color{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func (r *colorRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id stri
 	return nil
 }
 
-func (r *colorRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]interface{}) error {
+func (r *colorRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error {
 	if err := r.db.WithContext(ctx).Model(&model.Color{}).Where("id IN ?", ids).Updates(updateData).Error; err != nil {
 		return err
 	}

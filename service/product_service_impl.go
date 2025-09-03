@@ -286,7 +286,7 @@ func (s *productServiceImpl) GetCategoryByID(ctx context.Context, categoryID str
 		userMap[user.Id] = user
 	}
 
-	cRes := userMap[category.CreatedByID] 
+	cRes := userMap[category.CreatedByID]
 	uRes := userMap[category.UpdatedByID]
 	productResponses := toBaseProductResponse(category)
 
@@ -306,7 +306,7 @@ func (s *productServiceImpl) UpdateCategory(ctx context.Context, req *productpb.
 			return common.ErrCategoryNotFound
 		}
 
-		updateData := map[string]interface{}{}
+		updateData := map[string]any{}
 		if category.Name != req.Name {
 			updateData["name"] = req.Name
 		}
@@ -392,7 +392,7 @@ func (s *productServiceImpl) UpdateCategory(ctx context.Context, req *productpb.
 		userMap[user.Id] = user
 	}
 
-	cRes := userMap[category.CreatedByID] 
+	cRes := userMap[category.CreatedByID]
 	uRes := userMap[category.UpdatedByID]
 
 	productResponses := toBaseProductResponse(category)
@@ -623,7 +623,7 @@ func (s *productServiceImpl) UpdateTag(ctx context.Context, req *productpb.Updat
 			return common.ErrTagNotFound
 		}
 
-		updateData := map[string]interface{}{}
+		updateData := map[string]any{}
 		if tag.Name != req.Name {
 			updateData["name"] = req.Name
 			updateData["slug"] = common.GenerateSlug(req.Name)
@@ -662,7 +662,7 @@ func (s *productServiceImpl) UpdateColor(ctx context.Context, req *productpb.Upd
 			return common.ErrColorNotFound
 		}
 
-		updateData := map[string]interface{}{}
+		updateData := map[string]any{}
 		if color.Name != req.Name {
 			updateData["name"] = req.Name
 			updateData["slug"] = common.GenerateSlug(req.Name)
@@ -701,7 +701,7 @@ func (s *productServiceImpl) UpdateSize(ctx context.Context, req *productpb.Upda
 			return common.ErrSizeNotFound
 		}
 
-		updateData := map[string]interface{}{}
+		updateData := map[string]any{}
 		if size.Name != req.Name {
 			updateData["name"] = req.Name
 			updateData["slug"] = common.GenerateSlug(req.Name)
@@ -947,7 +947,7 @@ func (s *productServiceImpl) GetProductByID(ctx context.Context, productID strin
 		userMap[user.Id] = user
 	}
 
-	cRes := userMap[product.CreatedByID] 
+	cRes := userMap[product.CreatedByID]
 	uRes := userMap[product.UpdatedByID]
 
 	return toProductAdminDetailsResponse(product, cRes, uRes), nil
@@ -1010,7 +1010,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 			return common.ErrProductNotFound
 		}
 
-		updateProductData := map[string]interface{}{}
+		updateProductData := map[string]any{}
 		if req.Title != nil && *req.Title != product.Title {
 			updateProductData["title"] = req.Title
 			updateProductData["slug"] = common.GenerateSlug(*req.Title)
@@ -1130,7 +1130,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 
 		if len(req.UpdateImages) > 0 {
 			for _, image := range req.UpdateImages {
-				updateData := map[string]interface{}{}
+				updateData := map[string]any{}
 				if image.IsThumbnail != nil {
 					updateData["is_thumbnail"] = image.IsThumbnail
 				}
@@ -1206,7 +1206,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 
 		if len(req.UpdateVariants) > 0 {
 			for _, variant := range req.UpdateVariants {
-				updateData := map[string]interface{}{}
+				updateData := map[string]any{}
 				if variant.Sku != nil {
 					updateData["sku"] = variant.Sku
 				}
@@ -1227,7 +1227,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 				}
 
 				if variant.Quantity != nil {
-					updateData := map[string]interface{}{
+					updateData := map[string]any{
 						"quantity": int(*variant.Quantity),
 						"stock":    gorm.Expr("quantity - sold_quantity"),
 						"is_stock": gorm.Expr("CASE WHEN (quantity - sold_quantity) <= 5 THEN false ELSE true END"),
@@ -1312,14 +1312,14 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 		userMap[user.Id] = user
 	}
 
-	cRes := userMap[product.CreatedByID] 
+	cRes := userMap[product.CreatedByID]
 	uRes := userMap[product.UpdatedByID]
 
 	return toProductAdminDetailsResponse(product, cRes, uRes), nil
 }
 
 func (s *productServiceImpl) DeleteProduct(ctx context.Context, req *productpb.DeleteOneRequest) error {
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    true,
 		"updated_by_id": req.UserId,
 	}
@@ -1342,7 +1342,7 @@ func (s *productServiceImpl) DeleteProducts(ctx context.Context, req *productpb.
 		return common.ErrHasProductNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    true,
 		"updated_by_id": req.UserId,
 	}
@@ -1381,7 +1381,7 @@ func (s *productServiceImpl) PermanentlyDeleteCategories(ctx context.Context, re
 }
 
 func (s *productServiceImpl) DeleteColor(ctx context.Context, req *productpb.DeleteOneRequest) error {
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    true,
 		"updated_by_id": req.UserId,
 	}
@@ -1396,7 +1396,7 @@ func (s *productServiceImpl) DeleteColor(ctx context.Context, req *productpb.Del
 }
 
 func (s *productServiceImpl) DeleteSize(ctx context.Context, req *productpb.DeleteOneRequest) error {
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    true,
 		"updated_by_id": req.UserId,
 	}
@@ -1419,7 +1419,7 @@ func (s *productServiceImpl) DeleteColors(ctx context.Context, req *productpb.De
 		return common.ErrHasColorNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    true,
 		"updated_by_id": req.UserId,
 	}
@@ -1439,7 +1439,7 @@ func (s *productServiceImpl) DeleteSizes(ctx context.Context, req *productpb.Del
 		return common.ErrHasSizeNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    true,
 		"updated_by_id": req.UserId,
 	}
@@ -1533,7 +1533,7 @@ func (s *productServiceImpl) GetDeletedProductByID(ctx context.Context, productI
 		userMap[user.Id] = user
 	}
 
-	cRes := userMap[product.CreatedByID] 
+	cRes := userMap[product.CreatedByID]
 	uRes := userMap[product.UpdatedByID]
 
 	return toProductAdminDetailsResponse(product, cRes, uRes), nil
@@ -1753,7 +1753,7 @@ func (s *productServiceImpl) GetDeletedTags(ctx context.Context) (*productpb.Tag
 }
 
 func (s *productServiceImpl) DeleteTag(ctx context.Context, req *productpb.DeleteOneRequest) error {
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    true,
 		"updated_by_id": req.UserId,
 	}
@@ -1776,7 +1776,7 @@ func (s *productServiceImpl) DeleteTags(ctx context.Context, req *productpb.Dele
 		return common.ErrHasSizeNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    true,
 		"updated_by_id": req.UserId,
 	}
@@ -1796,7 +1796,7 @@ func (s *productServiceImpl) RestoreProduct(ctx context.Context, req *productpb.
 		return common.ErrProductNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    false,
 		"updated_by_id": req.UserId,
 	}
@@ -1819,7 +1819,7 @@ func (s *productServiceImpl) RestoreProducts(ctx context.Context, req *productpb
 		return common.ErrHasProductNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    false,
 		"updated_by_id": req.UserId,
 	}
@@ -1839,7 +1839,7 @@ func (s *productServiceImpl) RestoreColor(ctx context.Context, req *productpb.Re
 		return common.ErrColorNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    false,
 		"updated_by_id": req.UserId,
 	}
@@ -1862,7 +1862,7 @@ func (s *productServiceImpl) RestoreColors(ctx context.Context, req *productpb.R
 		return common.ErrHasColorNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    false,
 		"updated_by_id": req.UserId,
 	}
@@ -1882,7 +1882,7 @@ func (s *productServiceImpl) RestoreSize(ctx context.Context, req *productpb.Res
 		return common.ErrSizeNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    false,
 		"updated_by_id": req.UserId,
 	}
@@ -1905,7 +1905,7 @@ func (s *productServiceImpl) RestoreSizes(ctx context.Context, req *productpb.Re
 		return common.ErrHasSizeNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    false,
 		"updated_by_id": req.UserId,
 	}
@@ -1925,7 +1925,7 @@ func (s *productServiceImpl) RestoreTag(ctx context.Context, req *productpb.Rest
 		return common.ErrTagNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    false,
 		"updated_by_id": req.UserId,
 	}
@@ -1948,7 +1948,7 @@ func (s *productServiceImpl) RestoreTags(ctx context.Context, req *productpb.Res
 		return common.ErrHasTagNotFound
 	}
 
-	updateData := map[string]interface{}{
+	updateData := map[string]any{
 		"is_deleted":    false,
 		"updated_by_id": req.UserId,
 	}

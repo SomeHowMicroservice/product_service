@@ -52,7 +52,7 @@ func (r *tagRepositoryImpl) FindByIDTx(ctx context.Context, tx *gorm.DB, id stri
 	return findByIDBase(ctx, tx, id, &common.Locking{Strength: clause.LockingStrengthUpdate, Options: clause.LockingOptionsNoWait})
 }
 
-func (r *tagRepositoryImpl) Update(ctx context.Context, id string, updateData map[string]interface{}) error {
+func (r *tagRepositoryImpl) Update(ctx context.Context, id string, updateData map[string]any) error {
 	result := r.db.WithContext(ctx).Model(&model.Tag{}).Where("id = ?", id).Updates(updateData)
 	if result.Error != nil {
 		return result.Error
@@ -64,7 +64,7 @@ func (r *tagRepositoryImpl) Update(ctx context.Context, id string, updateData ma
 	return nil
 }
 
-func (r *tagRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]interface{}) error {
+func (r *tagRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
 	if err := tx.WithContext(ctx).Model(&model.Tag{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func (r *tagRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string
 	return nil
 }
 
-func (r *tagRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]interface{}) error {
+func (r *tagRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error {
 	if err := r.db.WithContext(ctx).Model(&model.Tag{}).Where("id IN ?", ids).Updates(updateData).Error; err != nil {
 		return err
 	}
