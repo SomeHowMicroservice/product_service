@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/SomeHowMicroservice/shm-be/product/common"
 	"github.com/SomeHowMicroservice/shm-be/product/model"
@@ -288,6 +289,8 @@ func (h *GRPCHandler) CreateProduct(ctx context.Context, req *productpb.CreatePr
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
+
+	fmt.Println(productID)
 
 	return &productpb.CreatedResponse{
 		Id: productID,

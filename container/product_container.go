@@ -14,7 +14,7 @@ import (
 	tagRepo "github.com/SomeHowMicroservice/shm-be/product/repository/tag"
 	variantRepo "github.com/SomeHowMicroservice/shm-be/product/repository/variant"
 	"github.com/SomeHowMicroservice/shm-be/product/service"
-	"github.com/rabbitmq/amqp091-go"
+	"github.com/ThreeDotsLabs/watermill/message"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 )
@@ -25,7 +25,7 @@ type Container struct {
 	ImageKit    imagekit.ImageKitService
 }
 
-func NewContainer(cfg *config.Config, db *gorm.DB, mqChannel *amqp091.Channel, grpcServer *grpc.Server, userClient userpb.UserServiceClient) *Container {
+func NewContainer(cfg *config.Config, db *gorm.DB, publisher message.Publisher, grpcServer *grpc.Server, userClient userpb.UserServiceClient) *Container {
 	imageKit := imagekit.NewImageKitService(cfg)
 	categoryRepo := categoryRepo.NewCategoryRepository(db)
 	productRepo := productRepo.NewProductRepository(db)
@@ -35,7 +35,7 @@ func NewContainer(cfg *config.Config, db *gorm.DB, mqChannel *amqp091.Channel, g
 	variantRepo := variantRepo.NewVariantRepository(db)
 	inventoryRepo := inventoryRepo.NewInventoryRepository(db)
 	imageRepo := imageRepo.NewImageRepository(db)
-	svc := service.NewProductService(cfg, db, userClient, mqChannel, categoryRepo, productRepo, tagRepo, colorRepo, sizeRepo, variantRepo, inventoryRepo, imageRepo)
+	svc := service.NewProductService(cfg, db, userClient, publisher, categoryRepo, productRepo, tagRepo, colorRepo, sizeRepo, variantRepo, inventoryRepo, imageRepo)
 	hdl := handler.NewGRPCHandler(grpcServer, svc)
 	return &Container{
 		hdl,

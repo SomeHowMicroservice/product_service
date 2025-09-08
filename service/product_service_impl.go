@@ -24,9 +24,10 @@ import (
 	sizeRepo "github.com/SomeHowMicroservice/shm-be/product/repository/size"
 	tagRepo "github.com/SomeHowMicroservice/shm-be/product/repository/tag"
 	variantRepo "github.com/SomeHowMicroservice/shm-be/product/repository/variant"
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -37,7 +38,7 @@ type productServiceImpl struct {
 	cfg           *config.Config
 	db            *gorm.DB
 	userClient    userpb.UserServiceClient
-	mqChannel     *amqp091.Channel
+	publisher     message.Publisher
 	categoryRepo  categoryRepo.CategoryRepository
 	productRepo   productRepo.ProductRepository
 	tagRepo       tagRepo.TagRepository
@@ -48,12 +49,12 @@ type productServiceImpl struct {
 	imageRepo     imageRepo.ImageRepository
 }
 
-func NewProductService(cfg *config.Config, db *gorm.DB, userClient userpb.UserServiceClient, mqChannel *amqp091.Channel, categoryRepo categoryRepo.CategoryRepository, productRepo productRepo.ProductRepository, tagRepo tagRepo.TagRepository, colorRepo colorRepo.ColorRepository, sizeRepo sizeRepo.SizeRepository, variantRepo variantRepo.VariantRepository, inventoryRepo inventoryRepo.InventoryRepository, imageRepo imageRepo.ImageRepository) ProductService {
+func NewProductService(cfg *config.Config, db *gorm.DB, userClient userpb.UserServiceClient, publisher message.Publisher, categoryRepo categoryRepo.CategoryRepository, productRepo productRepo.ProductRepository, tagRepo tagRepo.TagRepository, colorRepo colorRepo.ColorRepository, sizeRepo sizeRepo.SizeRepository, variantRepo variantRepo.VariantRepository, inventoryRepo inventoryRepo.InventoryRepository, imageRepo imageRepo.ImageRepository) ProductService {
 	return &productServiceImpl{
 		cfg,
 		db,
 		userClient,
-		mqChannel,
+		publisher,
 		categoryRepo,
 		productRepo,
 		tagRepo,
@@ -862,6 +863,7 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 	product.Variants = variants
 
 	images := make([]*model.Image, 0, len(req.Images))
+	var msgs []*message.Message
 	for _, img := range req.Images {
 		ext := strings.ToLower(filepath.Ext(img.FileName))
 		if ext == "" {
@@ -890,10 +892,7 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 			return "", fmt.Errorf("marshal json thất bại: %w", err)
 		}
 
-		if err = mq.PublishMessage(s.mqChannel, common.Exchange, common.UploadRoutingKey, body); err != nil {
-			return "", fmt.Errorf("đẩy tin nhắn upload ảnh thất bại: %w", err)
-		}
-
+		msgs = append(msgs, message.NewMessage(watermill.NewUUID(), body))
 		images = append(images, image)
 	}
 	product.Images = images
@@ -903,6 +902,12 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 			return "", common.ErrSlugAlreadyExists
 		}
 		return "", fmt.Errorf("tạo sản phẩm thất bại: %w", err)
+	}
+
+	for _, m := range msgs {
+		if err := s.publisher.Publish(common.UploadTopic, m); err != nil {
+			return "", fmt.Errorf("đẩy tin nhắn upload ảnh thất bại: %w", err)
+		}
 	}
 
 	return product.ID, nil
@@ -998,6 +1003,7 @@ func (s *productServiceImpl) GetAllProductsAdmin(ctx context.Context, req *produ
 }
 
 func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.UpdateProductRequest) (*productpb.ProductAdminDetailsResponse, error) {
+	var msgs []*message.Message
 	if err := s.db.Transaction(func(tx *gorm.DB) error {
 		product, err := s.productRepo.FindByIDWithCategoriesAndTagsTx(ctx, tx, req.Id)
 		if err != nil {
@@ -1121,9 +1127,11 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 			}
 
 			for _, image := range images {
-				body := []byte(image.FileID)
-				if err := mq.PublishMessage(s.mqChannel, common.Exchange, common.DeleteRoutingKey, body); err != nil {
-					return fmt.Errorf("đẩy tin nhắn xóa hình ảnh thất bại: %w", err)
+				if image.FileID != "" {
+					body := []byte(image.FileID)
+					if err := mq.PublishMessage(s.publisher, common.DeleteTopic, body); err != nil {
+						return fmt.Errorf("đẩy tin nhắn xóa hình ảnh thất bại: %w", err)
+					}
 				}
 			}
 		}
@@ -1178,10 +1186,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 					return fmt.Errorf("marshal json thất bại: %w", err)
 				}
 
-				if err = mq.PublishMessage(s.mqChannel, common.Exchange, common.UploadRoutingKey, body); err != nil {
-					return fmt.Errorf("đẩy tin nhắn upload ảnh thất bại: %w", err)
-				}
-
+				msgs = append(msgs, message.NewMessage(watermill.NewUUID(), body))
 				newImages = append(newImages, image)
 			}
 
@@ -1265,13 +1270,19 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 				if isUniqueViolation(err) {
 					return common.ErrHasSKUAlreadyExists
 				}
-				return fmt.Errorf("tạo variant mới thất bại: %w", err)
+				return fmt.Errorf("tạo biến thể thất bại: %w", err)
 			}
 		}
 
 		return nil
 	}); err != nil {
 		return nil, err
+	}
+
+	for _, m := range msgs {
+		if err := s.publisher.Publish(common.UploadTopic, m); err != nil {
+			return nil, fmt.Errorf("đẩy tin nhắn upload ảnh thất bại: %w", err)
+		}
 	}
 
 	product, err := s.productRepo.FindByIDWithDetails(ctx, req.Id)
@@ -1976,9 +1987,11 @@ func (s *productServiceImpl) PermanentlyDeleteProduct(ctx context.Context, req *
 	}
 
 	for _, image := range product.Images {
-		body := []byte(image.FileID)
-		if err := mq.PublishMessage(s.mqChannel, common.Exchange, common.DeleteRoutingKey, body); err != nil {
-			return fmt.Errorf("publish delete image msg thất bại: %w", err)
+		if image.FileID != "" {
+			body := []byte(image.FileID)
+			if err := mq.PublishMessage(s.publisher, common.DeleteTopic, body); err != nil {
+				return fmt.Errorf("publish delete image msg thất bại: %w", err)
+			}
 		}
 	}
 
@@ -2002,7 +2015,7 @@ func (s *productServiceImpl) PermanentlyDeleteProducts(ctx context.Context, req 
 	seen := make(map[string]bool)
 	for _, product := range products {
 		for _, image := range product.Images {
-			if !seen[image.FileID] {
+			if !seen[image.FileID] && image.FileID != "" {
 				seen[image.FileID] = true
 				imageFileIDs = append(imageFileIDs, image.FileID)
 			}
@@ -2011,7 +2024,7 @@ func (s *productServiceImpl) PermanentlyDeleteProducts(ctx context.Context, req 
 
 	for _, fileID := range imageFileIDs {
 		body := []byte(fileID)
-		if err := mq.PublishMessage(s.mqChannel, common.Exchange, common.DeleteRoutingKey, body); err != nil {
+		if err := mq.PublishMessage(s.publisher, common.DeleteTopic, body); err != nil {
 			return fmt.Errorf("publish delete image msg thất bại: %w", err)
 		}
 	}

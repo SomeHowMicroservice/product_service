@@ -1,18 +1,15 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
-	"net"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/SomeHowMicroservice/shm-be/product/config"
-	"github.com/SomeHowMicroservice/shm-be/product/consumers"
-	"github.com/SomeHowMicroservice/shm-be/product/initialization"
 	"github.com/SomeHowMicroservice/shm-be/product/server"
-)
-
-var (
-	userAddr = "localhost:8082"
 )
 
 func main() {
@@ -21,38 +18,24 @@ func main() {
 		log.Fatalf("Tải cấu hình Product Service thất bại: %v", err)
 	}
 
-	db, err := initialization.InitDB(cfg)
+	server, err := server.NewServer(cfg)
 	if err != nil {
-		log.Fatalf("Lỗi kết nối DB ở Product Service: %v", err)
+		log.Fatalf("Khởi tạo service thất bại: %v", err)
 	}
-	defer db.Close()
 
-	mqc, err := initialization.InitMessageQueue(cfg)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer mqc.Close()
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
-	userAddr = fmt.Sprintf("%s:%d", cfg.App.ServerHost, cfg.Services.UserPort)
-	clients, err := initialization.InitClients(userAddr)
-	if err != nil {
-		log.Fatalf("Kết nối tới các dịch vụ khác thất bại: %v", err)
-	}
-	defer clients.Close()
+	go func() {
+		if err := server.Start(); err != nil {
+			log.Fatalf("Chạy service thất bại: %v", err)
+		}
+	}()
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.App.GRPCPort))
-	if err != nil {
-		log.Fatalf("Không thể lắng nghe: %v", err)
-	}
-	defer lis.Close()
+	log.Println("Chạy service thành công")
 
-	grpcServer := server.NewGRPCServer(cfg, db.Gorm, mqc.Chann, clients.UserClient)
-
-	go consumers.StartUploadImageConsumer(mqc, grpcServer.ImageKit, grpcServer.ImageRepo)
-	go consumers.StartDeleteImageConsumer(mqc, grpcServer.ImageKit)
-
-	log.Println("Khởi chạy service thành công")
-	if err := grpcServer.Server.Serve(lis); err != nil {
-		log.Fatalf("Chạy gRPC server thất bại: %v", err)
-	}
+	<-stop
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	server.Shutdown(ctx)
 }

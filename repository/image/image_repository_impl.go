@@ -16,14 +16,6 @@ func NewImageRepository(db *gorm.DB) ImageRepository {
 	return &imageRepositoryImpl{db}
 }
 
-func (r *imageRepositoryImpl) Create(ctx context.Context, image *model.Image) error {
-	if err := r.db.WithContext(ctx).Create(image).Error; err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (r *imageRepositoryImpl) CreateAllTx(ctx context.Context, tx *gorm.DB, images []*model.Image) error {
 	if err := tx.WithContext(ctx).Create(&images).Error; err != nil {
 		return err

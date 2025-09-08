@@ -9,7 +9,7 @@ import (
 	productpb "github.com/SomeHowMicroservice/shm-be/product/protobuf/product"
 	userpb "github.com/SomeHowMicroservice/shm-be/product/protobuf/user"
 	imageRepo "github.com/SomeHowMicroservice/shm-be/product/repository/image"
-	"github.com/rabbitmq/amqp091-go"
+	"github.com/ThreeDotsLabs/watermill/message"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"gorm.io/gorm"
@@ -21,7 +21,7 @@ type GRPCServer struct {
 	ImageRepo imageRepo.ImageRepository
 }
 
-func NewGRPCServer(cfg *config.Config, db *gorm.DB, mqChann *amqp091.Channel, userClient userpb.UserServiceClient) *GRPCServer {
+func NewGRPCServer(cfg *config.Config, db *gorm.DB, publisher message.Publisher, userClient userpb.UserServiceClient) *GRPCServer {
 	kaParams := keepalive.ServerParameters{
 		Time:                  5 * time.Minute,
 		Timeout:               20 * time.Second,
@@ -40,7 +40,7 @@ func NewGRPCServer(cfg *config.Config, db *gorm.DB, mqChann *amqp091.Channel, us
 		grpc.KeepaliveEnforcementPolicy(kaPolicy),
 	)
 
-	productContainer := container.NewContainer(cfg, db, mqChann, grpcServer, userClient)
+	productContainer := container.NewContainer(cfg, db, publisher, grpcServer, userClient)
 
 	productpb.RegisterProductServiceServer(grpcServer, productContainer.GRPCHandler)
 
