@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -25,6 +24,7 @@ import (
 	tagRepo "github.com/SomeHowMicroservice/shm-be/product/repository/tag"
 	variantRepo "github.com/SomeHowMicroservice/shm-be/product/repository/variant"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/bytedance/sonic"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"google.golang.org/grpc/codes"
@@ -873,7 +873,7 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 			Folder:     s.cfg.ImageKit.Folder,
 		}
 
-		body, err := json.Marshal(uploadFileRequest)
+		body, err := sonic.Marshal(uploadFileRequest)
 		if err != nil {
 			return "", fmt.Errorf("marshal json thất bại: %w", err)
 		}
@@ -1242,7 +1242,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 					Folder:     s.cfg.ImageKit.Folder,
 				}
 
-				body, err := json.Marshal(uploadFileRequest)
+				body, err := sonic.Marshal(uploadFileRequest)
 				if err != nil {
 					return fmt.Errorf("marshal json thất bại: %w", err)
 				}

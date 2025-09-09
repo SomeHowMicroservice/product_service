@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
 
 	"github.com/SomeHowMicroservice/shm-be/product/config"
 	"github.com/SomeHowMicroservice/shm-be/product/initialization"
@@ -55,9 +54,9 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		middleware.CorrelationID,
 		middleware.Retry{
 			MaxRetries:      5,
-			InitialInterval: time.Second,
-			Multiplier:      2.0,
-			MaxInterval:     10 * time.Second,
+			InitialInterval: 0,
+			Multiplier:      1.0,
+			MaxInterval:     0,
 			Logger:          logger,
 		}.Middleware,
 		middleware.Recoverer,

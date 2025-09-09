@@ -2,7 +2,6 @@ package mq
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/SomeHowMicroservice/shm-be/product/imagekit"
 	imageRepo "github.com/SomeHowMicroservice/shm-be/product/repository/image"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/bytedance/sonic"
 )
 
 func RegisterDeleteImageConsumer(router *message.Router, subscriber message.Subscriber, imagekit imagekit.ImageKitService) {
@@ -48,7 +48,7 @@ func handleDeleteImage(msg *message.Message, imagekit imagekit.ImageKitService) 
 
 func handleUploadImage(msg *message.Message, imagekit imagekit.ImageKitService, imageRepo imageRepo.ImageRepository) error {
 	var imageMsg common.Base64UploadRequest
-	if err := json.Unmarshal(msg.Payload, &imageMsg); err != nil {
+	if err := sonic.Unmarshal(msg.Payload, &imageMsg); err != nil {
 		return fmt.Errorf("unmarshal json thất bại: %w", err)
 	}
 
