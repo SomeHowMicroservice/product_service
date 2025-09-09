@@ -19,11 +19,7 @@ func NewSizeRepository(db *gorm.DB) SizeRepository {
 }
 
 func (r *sizeRepositoryImpl) Create(ctx context.Context, size *model.Size) error {
-	if err := r.db.WithContext(ctx).Create(size).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Create(size).Error
 }
 
 func (r *sizeRepositoryImpl) FindAll(ctx context.Context) ([]*model.Size, error) {
@@ -61,11 +57,7 @@ func (r *sizeRepositoryImpl) Update(ctx context.Context, id string, updateData m
 }
 
 func (r *sizeRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
-	if err := tx.WithContext(ctx).Model(&model.Size{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return tx.WithContext(ctx).Model(&model.Size{}).Where("id = ?", id).Updates(updateData).Error
 }
 
 func (r *sizeRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]*model.Size, error) {
@@ -87,11 +79,7 @@ func (r *sizeRepositoryImpl) FindAllDeletedByID(ctx context.Context, ids []strin
 }
 
 func (r *sizeRepositoryImpl) DeleteAllByID(ctx context.Context, ids []string) error {
-	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Size{}).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Size{}).Error
 }
 
 func (r *sizeRepositoryImpl) Delete(ctx context.Context, id string) error {
@@ -107,11 +95,7 @@ func (r *sizeRepositoryImpl) Delete(ctx context.Context, id string) error {
 }
 
 func (r *sizeRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error {
-	if err := r.db.WithContext(ctx).Model(&model.Size{}).Where("id IN ?", ids).Updates(updateData).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Model(&model.Size{}).Where("id IN ?", ids).Updates(updateData).Error
 }
 
 func (r *sizeRepositoryImpl) FindDeletedByID(ctx context.Context, id string) (*model.Size, error) {

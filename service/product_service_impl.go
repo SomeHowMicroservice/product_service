@@ -24,7 +24,6 @@ import (
 	sizeRepo "github.com/SomeHowMicroservice/shm-be/product/repository/size"
 	tagRepo "github.com/SomeHowMicroservice/shm-be/product/repository/tag"
 	variantRepo "github.com/SomeHowMicroservice/shm-be/product/repository/variant"
-	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -615,7 +614,7 @@ func (s *productServiceImpl) GetAllTagsAdmin(ctx context.Context) (*productpb.Ta
 }
 
 func (s *productServiceImpl) UpdateTag(ctx context.Context, req *productpb.UpdateTagRequest) error {
-	if err := s.db.Transaction(func(tx *gorm.DB) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
 		tag, err := s.tagRepo.FindByIDTx(ctx, tx, req.Id)
 		if err != nil {
 			return fmt.Errorf("tìm kiếm tag sản phẩm thất bại: %w", err)
@@ -643,15 +642,11 @@ func (s *productServiceImpl) UpdateTag(ctx context.Context, req *productpb.Updat
 		}
 
 		return nil
-	}); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }
 
 func (s *productServiceImpl) UpdateColor(ctx context.Context, req *productpb.UpdateColorRequest) error {
-	if err := s.db.Transaction(func(tx *gorm.DB) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
 		color, err := s.colorRepo.FindByIDTx(ctx, tx, req.Id)
 		if err != nil {
 			if strings.Contains(err.Error(), "lock") {
@@ -682,15 +677,11 @@ func (s *productServiceImpl) UpdateColor(ctx context.Context, req *productpb.Upd
 		}
 
 		return nil
-	}); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }
 
 func (s *productServiceImpl) UpdateSize(ctx context.Context, req *productpb.UpdateSizeRequest) error {
-	if err := s.db.Transaction(func(tx *gorm.DB) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
 		size, err := s.sizeRepo.FindByIDTx(ctx, tx, req.Id)
 		if err != nil {
 			if strings.Contains(err.Error(), "lock") {
@@ -721,11 +712,7 @@ func (s *productServiceImpl) UpdateSize(ctx context.Context, req *productpb.Upda
 		}
 
 		return nil
-	}); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }
 
 func (s *productServiceImpl) GetAllColors(ctx context.Context) ([]*model.Color, error) {
@@ -863,7 +850,6 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 	product.Variants = variants
 
 	images := make([]*model.Image, 0, len(req.Images))
-	var msgs []*message.Message
 	for _, img := range req.Images {
 		ext := strings.ToLower(filepath.Ext(img.FileName))
 		if ext == "" {
@@ -892,7 +878,10 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 			return "", fmt.Errorf("marshal json thất bại: %w", err)
 		}
 
-		msgs = append(msgs, message.NewMessage(watermill.NewUUID(), body))
+		if err = mq.PublishMessage(s.publisher, common.UploadTopic, body); err != nil {
+			return "", fmt.Errorf("đẩy tin nhắn upload ảnh thất bại")
+		}
+
 		images = append(images, image)
 	}
 	product.Images = images
@@ -902,12 +891,6 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 			return "", common.ErrSlugAlreadyExists
 		}
 		return "", fmt.Errorf("tạo sản phẩm thất bại: %w", err)
-	}
-
-	for _, m := range msgs {
-		if err := s.publisher.Publish(common.UploadTopic, m); err != nil {
-			return "", fmt.Errorf("đẩy tin nhắn upload ảnh thất bại: %w", err)
-		}
 	}
 
 	return product.ID, nil
@@ -1003,7 +986,6 @@ func (s *productServiceImpl) GetAllProductsAdmin(ctx context.Context, req *produ
 }
 
 func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.UpdateProductRequest) (*productpb.ProductAdminDetailsResponse, error) {
-	var msgs []*message.Message
 	if err := s.db.Transaction(func(tx *gorm.DB) error {
 		product, err := s.productRepo.FindByIDWithCategoriesAndTagsTx(ctx, tx, req.Id)
 		if err != nil {
@@ -1113,88 +1095,6 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 			}
 		}
 
-		if len(req.DeleteImageIds) > 0 {
-			images, err := s.imageRepo.FindAllByID(ctx, req.DeleteImageIds)
-			if err != nil {
-				return fmt.Errorf("tìm kiếm danh sách hình ảnh thất bại: %w", err)
-			}
-			if len(images) != len(req.DeleteImageIds) {
-				return common.ErrHasImageNotFound
-			}
-
-			if err = s.imageRepo.DeleteAllByIDTx(ctx, tx, req.DeleteImageIds); err != nil {
-				return fmt.Errorf("xóa danh sách hình ảnh thất bại: %w", err)
-			}
-
-			for _, image := range images {
-				if image.FileID != "" {
-					body := []byte(image.FileID)
-					if err := mq.PublishMessage(s.publisher, common.DeleteTopic, body); err != nil {
-						return fmt.Errorf("đẩy tin nhắn xóa hình ảnh thất bại: %w", err)
-					}
-				}
-			}
-		}
-
-		if len(req.UpdateImages) > 0 {
-			for _, image := range req.UpdateImages {
-				updateData := map[string]any{}
-				if image.IsThumbnail != nil {
-					updateData["is_thumbnail"] = image.IsThumbnail
-				}
-				if image.SortOrder != nil {
-					updateData["sort_order"] = image.SortOrder
-				}
-
-				if len(updateData) > 0 {
-					if err = s.imageRepo.UpdateTx(ctx, tx, image.Id, updateData); err != nil {
-						return fmt.Errorf("cập nhật ảnh %s thất bại: %w", image.Id, err)
-					}
-				}
-			}
-		}
-
-		if len(req.NewImages) > 0 {
-			newImages := make([]*model.Image, 0, len(req.NewImages))
-
-			for _, img := range req.NewImages {
-				ext := strings.ToLower(filepath.Ext(img.FileName))
-				if ext == "" {
-					ext = ".jpg"
-				}
-				fileName := fmt.Sprintf("%s-%s_%d%s", product.Slug, img.ColorId, img.SortOrder, ext)
-
-				imageUrl := fmt.Sprintf("%s/%s/%s", s.cfg.ImageKit.URLEndpoint, s.cfg.ImageKit.Folder, fileName)
-				image := &model.Image{
-					ID:          uuid.NewString(),
-					ProductID:   product.ID,
-					ColorID:     img.ColorId,
-					Url:         imageUrl,
-					IsThumbnail: img.IsThumbnail,
-					SortOrder:   int(img.SortOrder),
-				}
-
-				uploadFileRequest := &common.Base64UploadRequest{
-					ImageID:    image.ID,
-					Base64Data: img.Base64Data,
-					FileName:   fileName,
-					Folder:     s.cfg.ImageKit.Folder,
-				}
-
-				body, err := json.Marshal(uploadFileRequest)
-				if err != nil {
-					return fmt.Errorf("marshal json thất bại: %w", err)
-				}
-
-				msgs = append(msgs, message.NewMessage(watermill.NewUUID(), body))
-				newImages = append(newImages, image)
-			}
-
-			if err = s.imageRepo.CreateAllTx(ctx, tx, newImages); err != nil {
-				return fmt.Errorf("tạo ảnh sản phẩm thất bại: %w", err)
-			}
-		}
-
 		if len(req.DeleteVariantIds) > 0 {
 			variants, err := s.variantRepo.FindAllByID(ctx, req.DeleteVariantIds)
 			if err != nil {
@@ -1274,15 +1174,94 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 			}
 		}
 
+		if len(req.DeleteImageIds) > 0 {
+			images, err := s.imageRepo.FindAllByID(ctx, req.DeleteImageIds)
+			if err != nil {
+				return fmt.Errorf("tìm kiếm danh sách hình ảnh thất bại: %w", err)
+			}
+			if len(images) != len(req.DeleteImageIds) {
+				return common.ErrHasImageNotFound
+			}
+
+			if err = s.imageRepo.DeleteAllByIDTx(ctx, tx, req.DeleteImageIds); err != nil {
+				return fmt.Errorf("xóa danh sách hình ảnh thất bại: %w", err)
+			}
+
+			for _, image := range images {
+				if image.FileID != "" {
+					body := []byte(image.FileID)
+					if err := mq.PublishMessage(s.publisher, common.DeleteTopic, body); err != nil {
+						return fmt.Errorf("đẩy tin nhắn xóa hình ảnh thất bại: %w", err)
+					}
+				}
+			}
+		}
+
+		if len(req.UpdateImages) > 0 {
+			for _, image := range req.UpdateImages {
+				updateData := map[string]any{}
+				if image.IsThumbnail != nil {
+					updateData["is_thumbnail"] = image.IsThumbnail
+				}
+				if image.SortOrder != nil {
+					updateData["sort_order"] = image.SortOrder
+				}
+
+				if len(updateData) > 0 {
+					if err = s.imageRepo.UpdateTx(ctx, tx, image.Id, updateData); err != nil {
+						return fmt.Errorf("cập nhật ảnh %s thất bại: %w", image.Id, err)
+					}
+				}
+			}
+		}
+
+		if len(req.NewImages) > 0 {
+			newImages := make([]*model.Image, 0, len(req.NewImages))
+
+			for _, img := range req.NewImages {
+				ext := strings.ToLower(filepath.Ext(img.FileName))
+				if ext == "" {
+					ext = ".jpg"
+				}
+				fileName := fmt.Sprintf("%s-%s_%d%s", product.Slug, img.ColorId, img.SortOrder, ext)
+
+				imageUrl := fmt.Sprintf("%s/%s/%s", s.cfg.ImageKit.URLEndpoint, s.cfg.ImageKit.Folder, fileName)
+				image := &model.Image{
+					ID:          uuid.NewString(),
+					ProductID:   product.ID,
+					ColorID:     img.ColorId,
+					Url:         imageUrl,
+					IsThumbnail: img.IsThumbnail,
+					SortOrder:   int(img.SortOrder),
+				}
+
+				uploadFileRequest := &common.Base64UploadRequest{
+					ImageID:    image.ID,
+					Base64Data: img.Base64Data,
+					FileName:   fileName,
+					Folder:     s.cfg.ImageKit.Folder,
+				}
+
+				body, err := json.Marshal(uploadFileRequest)
+				if err != nil {
+					return fmt.Errorf("marshal json thất bại: %w", err)
+				}
+
+				if err = mq.PublishMessage(s.publisher, common.UploadTopic, body); err != nil {
+					return fmt.Errorf("đẩy tin nhắn upload ảnh thất bại")
+				}
+
+				newImages = append(newImages, image)
+			}
+
+			if err = s.imageRepo.CreateAllTx(ctx, tx, newImages); err != nil {
+				return fmt.Errorf("tạo ảnh sản phẩm thất bại: %w", err)
+			}
+		}
+
 		return nil
 	}); err != nil {
 		return nil, err
-	}
-
-	for _, m := range msgs {
-		if err := s.publisher.Publish(common.UploadTopic, m); err != nil {
-			return nil, fmt.Errorf("đẩy tin nhắn upload ảnh thất bại: %w", err)
-		}
 	}
 
 	product, err := s.productRepo.FindByIDWithDetails(ctx, req.Id)

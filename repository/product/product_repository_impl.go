@@ -20,11 +20,7 @@ func NewProductRepository(db *gorm.DB) ProductRepository {
 }
 
 func (r *productRepositoryImpl) Create(ctx context.Context, product *model.Product) error {
-	if err := r.db.WithContext(ctx).Create(product).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Create(product).Error
 }
 
 func (r *productRepositoryImpl) ExistsBySlug(ctx context.Context, slug string) (bool, error) {
@@ -111,11 +107,7 @@ func (r *productRepositoryImpl) FindAllDeletedByIDWithImages(ctx context.Context
 }
 
 func (r *productRepositoryImpl) DeleteAllByID(ctx context.Context, ids []string) error {
-	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Product{}).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Product{}).Error
 }
 
 func (r *productRepositoryImpl) FindAllDeletedByID(ctx context.Context, ids []string) ([]*model.Product, error) {
@@ -123,11 +115,7 @@ func (r *productRepositoryImpl) FindAllDeletedByID(ctx context.Context, ids []st
 }
 
 func (r *productRepositoryImpl) UpdateCategoriesTx(ctx context.Context, tx *gorm.DB, product *model.Product, categories []*model.Category) error {
-	if err := tx.WithContext(ctx).Model(product).Association("Categories").Replace(categories); err != nil {
-		return err
-	}
-
-	return nil
+	return tx.WithContext(ctx).Model(product).Association("Categories").Replace(categories)
 }
 
 func (r *productRepositoryImpl) FindByIDWithCategoriesAndTags(ctx context.Context, id string) (*model.Product, error) {
@@ -137,11 +125,7 @@ func (r *productRepositoryImpl) FindByIDWithCategoriesAndTags(ctx context.Contex
 }
 
 func (r *productRepositoryImpl) UpdateTagsTx(ctx context.Context, tx *gorm.DB, product *model.Product, tags []*model.Tag) error {
-	if err := tx.WithContext(ctx).Model(product).Association("Tags").Replace(tags); err != nil {
-		return err
-	}
-
-	return nil
+	return tx.WithContext(ctx).Model(product).Association("Tags").Replace(tags)
 }
 
 func (r *productRepositoryImpl) Update(ctx context.Context, id string, updateData map[string]any) error {
@@ -157,11 +141,7 @@ func (r *productRepositoryImpl) Update(ctx context.Context, id string, updateDat
 }
 
 func (r *productRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
-	if err := tx.WithContext(ctx).Model(&model.Product{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return tx.WithContext(ctx).Model(&model.Product{}).Where("id = ?", id).Updates(updateData).Error
 }
 
 func (r *productRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]*model.Product, error) {
@@ -169,11 +149,7 @@ func (r *productRepositoryImpl) FindAllByID(ctx context.Context, ids []string) (
 }
 
 func (r *productRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error {
-	if err := r.db.WithContext(ctx).Model(&model.Product{}).Where("id IN ?", ids).Updates(updateData).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Model(&model.Product{}).Where("id IN ?", ids).Updates(updateData).Error
 }
 
 func (r *productRepositoryImpl) FindAllDeletedPaginatedWithCategoriesAndThumbnail(ctx context.Context, query *common.PaginationQuery) ([]*model.Product, int64, error) {

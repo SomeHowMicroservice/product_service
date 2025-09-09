@@ -19,11 +19,7 @@ func NewCategoryRepository(db *gorm.DB) CategoryRepository {
 }
 
 func (r *categoryRepositoryImpl) Create(ctx context.Context, category *model.Category) error {
-	if err := r.db.WithContext(ctx).Create(category).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Create(category).Error
 }
 
 func (r *categoryRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]*model.Category, error) {
@@ -80,11 +76,7 @@ func (r *categoryRepositoryImpl) FindByIDWithParentsAndProducts(ctx context.Cont
 }
 
 func (r *categoryRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
-	if err := tx.WithContext(ctx).Model(&model.Category{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return tx.WithContext(ctx).Model(&model.Category{}).Where("id = ?", id).Updates(updateData).Error
 }
 
 func (r *categoryRepositoryImpl) FindByIDWithParents(ctx context.Context, id string) (*model.Category, error) {
@@ -92,11 +84,7 @@ func (r *categoryRepositoryImpl) FindByIDWithParents(ctx context.Context, id str
 }
 
 func (r *categoryRepositoryImpl) UpdateParentsTx(ctx context.Context, tx *gorm.DB, category *model.Category, parents []*model.Category) error {
-	if err := tx.WithContext(ctx).Model(category).Association("Parents").Replace(parents); err != nil {
-		return err
-	}
-
-	return nil
+	return tx.WithContext(ctx).Model(category).Association("Parents").Replace(parents)
 }
 
 func (r *categoryRepositoryImpl) FindAllWithChildren(ctx context.Context) ([]*model.Category, error) {
@@ -108,11 +96,7 @@ func (r *categoryRepositoryImpl) FindAllByIDTx(ctx context.Context, tx *gorm.DB,
 }
 
 func (r *categoryRepositoryImpl) DeleteAllByID(ctx context.Context, ids []string) error {
-	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Category{}).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Category{}).Error
 }
 
 func (r *categoryRepositoryImpl) Delete(ctx context.Context, id string) error {

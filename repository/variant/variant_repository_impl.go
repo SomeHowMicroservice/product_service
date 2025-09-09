@@ -16,19 +16,11 @@ func NewVariantRepository(db *gorm.DB) VariantRepository {
 }
 
 func (r *variantRepositoryImpl) Create(ctx context.Context, variant *model.Variant) error {
-	if err := r.db.WithContext(ctx).Create(variant).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Create(variant).Error
 }
 
 func (r *variantRepositoryImpl) CreateAllTx(ctx context.Context, tx *gorm.DB, variants []*model.Variant) error {
-	if err := tx.WithContext(ctx).Create(&variants).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return tx.WithContext(ctx).Create(&variants).Error
 }
 
 func (r *variantRepositoryImpl) ExistsBySKU(ctx context.Context, sku string) (bool, error) {
@@ -50,17 +42,9 @@ func (r *variantRepositoryImpl) FindAllByID(ctx context.Context, ids []string) (
 }
 
 func (r *variantRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
-	if err := tx.WithContext(ctx).Model(&model.Variant{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return tx.WithContext(ctx).Model(&model.Variant{}).Where("id = ?", id).Updates(updateData).Error
 }
 
 func (r *variantRepositoryImpl) DeleteAllByIDTx(ctx context.Context, tx *gorm.DB, ids []string) error {
-	if err := tx.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Variant{}).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return tx.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Variant{}).Error
 }

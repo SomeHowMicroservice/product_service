@@ -28,11 +28,7 @@ func (r *tagRepositoryImpl) ExistsBySlug(ctx context.Context, slug string) (bool
 }
 
 func (r *tagRepositoryImpl) Create(ctx context.Context, tag *model.Tag) error {
-	if err := r.db.WithContext(ctx).Create(tag).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Create(tag).Error
 }
 
 func (r *tagRepositoryImpl) FindAll(ctx context.Context) ([]*model.Tag, error) {
@@ -65,19 +61,11 @@ func (r *tagRepositoryImpl) Update(ctx context.Context, id string, updateData ma
 }
 
 func (r *tagRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
-	if err := tx.WithContext(ctx).Model(&model.Tag{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return tx.WithContext(ctx).Model(&model.Tag{}).Where("id = ?", id).Updates(updateData).Error
 }
 
 func (r *tagRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error {
-	if err := r.db.WithContext(ctx).Model(&model.Tag{}).Where("id IN ?", ids).Updates(updateData).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Model(&model.Tag{}).Where("id IN ?", ids).Updates(updateData).Error
 }
 
 func (r *tagRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]*model.Tag, error) {
@@ -120,11 +108,7 @@ func (r *tagRepositoryImpl) FindAllDeletedByID(ctx context.Context, ids []string
 }
 
 func (r *tagRepositoryImpl) DeleteAllByID(ctx context.Context, ids []string) error {
-	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Tag{}).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Tag{}).Error
 }
 
 func (r *tagRepositoryImpl) Delete(ctx context.Context, id string) error {

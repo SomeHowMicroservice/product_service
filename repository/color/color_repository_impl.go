@@ -19,11 +19,7 @@ func NewColorRepository(db *gorm.DB) ColorRepository {
 }
 
 func (r *colorRepositoryImpl) Create(ctx context.Context, color *model.Color) error {
-	if err := r.db.WithContext(ctx).Create(color).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Create(color).Error
 }
 
 func (r *colorRepositoryImpl) ExistsByID(ctx context.Context, id string) (bool, error) {
@@ -83,11 +79,7 @@ func (r *colorRepositoryImpl) FindByIDTx(ctx context.Context, tx *gorm.DB, id st
 }
 
 func (r *colorRepositoryImpl) DeleteAllByID(ctx context.Context, ids []string) error {
-	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Color{}).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Color{}).Error
 }
 
 func (r *colorRepositoryImpl) Delete(ctx context.Context, id string) error {
@@ -115,19 +107,11 @@ func (r *colorRepositoryImpl) Update(ctx context.Context, id string, updateData 
 }
 
 func (r *colorRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
-	if err := tx.WithContext(ctx).Model(&model.Color{}).Where("id = ?", id).Updates(updateData).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return tx.WithContext(ctx).Model(&model.Color{}).Where("id = ?", id).Updates(updateData).Error
 }
 
 func (r *colorRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error {
-	if err := r.db.WithContext(ctx).Model(&model.Color{}).Where("id IN ?", ids).Updates(updateData).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Model(&model.Color{}).Where("id IN ?", ids).Updates(updateData).Error
 }
 
 func (r *colorRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]*model.Color, error) {

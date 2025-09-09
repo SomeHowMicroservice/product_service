@@ -61,9 +61,5 @@ func (d *DB) Close() {
 }
 
 func runAutoMigrations(db *gorm.DB) error {
-	if err := db.AutoMigrate(allModels...); err != nil {
-		return err
-	}
-
-	return nil
+	return db.AutoMigrate(allModels...)
 }
