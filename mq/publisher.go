@@ -12,7 +12,6 @@ func PublishMessage(publisher message.Publisher, topic string, payload []byte) e
 	)
 
 	msg.Metadata.Set("content-type", "application/json")
-	msg.Metadata.Set("delivery-mode", "2")
 
 	return publisher.Publish(topic, msg)
 }

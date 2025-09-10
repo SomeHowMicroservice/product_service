@@ -54,6 +54,14 @@ func handleUploadImage(msg *message.Message, imagekit imagekit.ImageKitService, 
 
 	ctx := context.Background()
 
+	image, err := imageRepo.FindByID(ctx, imageMsg.ImageID)
+	if err != nil {
+		return fmt.Errorf("tìm kiếm hình ảnh thất bại: %w", err)
+	}
+	if image == nil {
+		return fmt.Errorf("không tìm thấy hình ảnh có id: %s", imageMsg.ImageID)
+	}
+
 	res, err := imagekit.UploadFromBase64(ctx, &imageMsg)
 	if err != nil {
 		return fmt.Errorf("upload image thất bại: %w", err)

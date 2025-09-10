@@ -48,7 +48,7 @@ func InitWatermill(cfg *config.Config, logger watermill.LoggerAdapter) (*Watermi
 		GenerateName: func(topic string) string {
 			return topic
 		},
-		Durable:    true,
+		Durable:    false,
 		AutoDelete: false,
 		Exclusive:  false,
 	}
