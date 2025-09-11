@@ -43,10 +43,6 @@ func (s *imageKitServiceImpl) UploadFromBase64(ctx context.Context, req *common.
 		FileID:       result.Data.FileId,
 		Name:         result.Data.Name,
 		URL:          result.Data.Url,
-		ThumbnailURL: result.Data.ThumbnailUrl,
-		Size:         int64(result.Data.Size),
-		Width:        result.Data.Width,
-		Height:       result.Data.Height,
 	}, nil
 }
 

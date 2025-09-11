@@ -266,7 +266,7 @@ func (s *productServiceImpl) GetCategoryByID(ctx context.Context, categoryID str
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+	userRes, err := s.userClient.GetUsersPublicById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -372,7 +372,7 @@ func (s *productServiceImpl) UpdateCategory(ctx context.Context, req *productpb.
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+	userRes, err := s.userClient.GetUsersPublicById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -418,7 +418,7 @@ func (s *productServiceImpl) GetAllColorsAdmin(ctx context.Context) (*productpb.
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+	userRes, err := s.userClient.GetUsersPublicById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -489,7 +489,7 @@ func (s *productServiceImpl) GetAllSizesAdmin(ctx context.Context) (*productpb.S
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+	userRes, err := s.userClient.GetUsersPublicById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -560,7 +560,7 @@ func (s *productServiceImpl) GetAllTagsAdmin(ctx context.Context) (*productpb.Ta
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+	userRes, err := s.userClient.GetUsersPublicById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -850,8 +850,9 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 	}
 	product.Variants = variants
 
-	publishChan := make(chan *common.Base64UploadRequest, len(req.Images))
-	images := make([]*model.Image, 0, len(req.Images))
+	imgQuan := len(req.Images)
+	publishChan := make(chan *common.Base64UploadRequest, imgQuan)
+	images := make([]*model.Image, 0, imgQuan)
 	for _, img := range req.Images {
 		ext := strings.ToLower(filepath.Ext(img.FileName))
 		if ext == "" {
@@ -869,10 +870,13 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 		}
 
 		uploadFileRequest := &common.Base64UploadRequest{
+			ProductID: product.ID,
 			ImageID:    image.ID,
 			Base64Data: img.Base64Data,
 			FileName:   fileName,
 			Folder:     s.cfg.ImageKit.Folder,
+			UserID: req.UserId,
+			TotalImages: uint16(imgQuan),
 		}
 
 		publishChan <- uploadFileRequest
@@ -917,7 +921,7 @@ func (s *productServiceImpl) GetProductByID(ctx context.Context, productID strin
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+	userRes, err := s.userClient.GetUsersPublicById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -1228,8 +1232,9 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 		}
 
 		if len(req.NewImages) > 0 {
-			newImages := make([]*model.Image, 0, len(req.NewImages))
-			publishChan := make(chan *common.Base64UploadRequest, len(req.NewImages))
+			imgQuan := len(req.NewImages)
+			newImages := make([]*model.Image, 0, imgQuan)
+			publishChan := make(chan *common.Base64UploadRequest, imgQuan)
 
 			for _, img := range req.NewImages {
 				ext := strings.ToLower(filepath.Ext(img.FileName))
@@ -1249,10 +1254,12 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 				}
 
 				uploadFileRequest := &common.Base64UploadRequest{
+					ProductID: product.ID,
 					ImageID:    image.ID,
 					Base64Data: img.Base64Data,
 					FileName:   fileName,
 					Folder:     s.cfg.ImageKit.Folder,
+					TotalImages: uint16(imgQuan),
 				}
 				publishChan <- uploadFileRequest
 
@@ -1294,7 +1301,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+	userRes, err := s.userClient.GetUsersPublicById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -1515,7 +1522,7 @@ func (s *productServiceImpl) GetDeletedProductByID(ctx context.Context, productI
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+	userRes, err := s.userClient.GetUsersPublicById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -1559,7 +1566,7 @@ func (s *productServiceImpl) GetDeletedColors(ctx context.Context) (*productpb.C
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+	userRes, err := s.userClient.GetUsersPublicById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -1630,7 +1637,7 @@ func (s *productServiceImpl) GetDeletedSizes(ctx context.Context) (*productpb.Si
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+	userRes, err := s.userClient.GetUsersPublicById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {
@@ -1701,7 +1708,7 @@ func (s *productServiceImpl) GetDeletedTags(ctx context.Context) (*productpb.Tag
 		userIDs = append(userIDs, id)
 	}
 
-	userRes, err := s.userClient.GetUsersById(ctx, &userpb.GetManyRequest{
+	userRes, err := s.userClient.GetUsersPublicById(ctx, &userpb.GetManyRequest{
 		Ids: userIDs,
 	})
 	if err != nil {

@@ -4,35 +4,21 @@ package user;
 option go_package = ".";
 
 service UserService {
-  rpc GetUserById(GetOneRequest) returns (UserResponse);
+  rpc GetUserPublicById(GetOneRequest) returns (UserPublicResponse);
 
-  rpc GetUsersById(GetManyRequest) returns (UsersPublicResponse);
+  rpc GetUsersPublicById(GetManyRequest) returns (UsersPublicResponse);
 }
 
-message UsersPublicResponse {
-  repeated UserPublicResponse users = 1;
+message GetOneRequest {
+  string id = 1;
 }
 
 message GetManyRequest {
   repeated string ids = 1;
 }
 
-message UserResponse {
-  string id = 1;
-  string username = 2;
-  string email = 3;
-  repeated string roles = 4;
-  string password = 5;
-  string created_at = 6;
-  ProfileResponse profile = 7;
-}
-
-message ProfileResponse {
-  string id = 1;
-  string first_name = 2;
-  string last_name = 3;
-  string gender = 4;
-  string dob = 5;
+message UsersPublicResponse {
+  repeated UserPublicResponse users = 1;
 }
 
 message UserPublicResponse {
@@ -44,6 +30,10 @@ message UserPublicResponse {
   ProfileResponse profile = 6;
 }
 
-message GetOneRequest {
+message ProfileResponse {
   string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string gender = 4;
+  string dob = 5;
 }

@@ -3,20 +3,24 @@ package common
 import "gorm.io/gorm"
 
 type Base64UploadRequest struct {
-	ImageID    string `json:"image_id"`
-	Base64Data string `json:"base64_data"`
-	FileName   string `json:"file_name"`
-	Folder     string `json:"folder"`
+	ProductID   string `json:"product_id"`
+	ImageID     string `json:"image_id"`
+	Base64Data  string `json:"base64_data"`
+	FileName    string `json:"file_name"`
+	Folder      string `json:"folder"`
+	UserID      string `json:"user_id"`
+	TotalImages uint16 `json:"total_images"`
 }
 
 type UploadFileResponse struct {
-	FileID       string `json:"file_id"`
-	Name         string `json:"name"`
-	URL          string `json:"url"`
-	ThumbnailURL string `json:"thumbnail_url"`
-	Size         int64  `json:"size"`
-	Width        int    `json:"width"`
-	Height       int    `json:"height"`
+	FileID string `json:"file_id"`
+	Name   string `json:"name"`
+	URL    string `json:"url"`
+}
+
+type ImageUploadedEvent struct {
+	Service string `json:"service"`
+	UserID  string `json:"user_id"`
 }
 
 type Preload struct {

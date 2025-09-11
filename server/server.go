@@ -57,7 +57,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 			MaxRetries:      5,
 			InitialInterval: time.Microsecond,
 			Multiplier:      1.5,
-			MaxInterval:     5 * time.Second,
+			MaxInterval:     5 * time.Microsecond,
 			Logger:          logger,
 		}.Middleware,
 		middleware.Recoverer,
@@ -70,7 +70,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 
 	grpcServer := NewGRPCServer(cfg, db.Gorm, wm.Publisher, clients.UserClient)
 
-	mq.RegisterUploadImageConsumer(router, wm.Subscriber, grpcServer.ImageKit, grpcServer.ImageRepo)
+	mq.RegisterUploadImageConsumer(router, wm.Publisher, wm.Subscriber, grpcServer.ImageKit, grpcServer.ImageRepo)
 	mq.RegisterDeleteImageConsumer(router, wm.Subscriber, grpcServer.ImageKit)
 
 	go func() {

@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	"github.com/SomeHowMicroservice/shm-be/product/common"
 	"github.com/SomeHowMicroservice/shm-be/product/model"
@@ -19,18 +18,6 @@ func NewImageRepository(db *gorm.DB) ImageRepository {
 
 func (r *imageRepositoryImpl) CreateAllTx(ctx context.Context, tx *gorm.DB, images []*model.Image) error {
 	return tx.WithContext(ctx).Create(&images).Error
-}
-
-func (r *imageRepositoryImpl) FindByID(ctx context.Context, id string) (*model.Image, error) {
-	var img model.Image
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&img).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return &img, nil
 }
 
 func (r *imageRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]*model.Image, error) {

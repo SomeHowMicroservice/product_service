@@ -19,16 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_GetUserById_FullMethodName  = "/user.UserService/GetUserById"
-	UserService_GetUsersById_FullMethodName = "/user.UserService/GetUsersById"
+	UserService_GetUserPublicById_FullMethodName  = "/user.UserService/GetUserPublicById"
+	UserService_GetUsersPublicById_FullMethodName = "/user.UserService/GetUsersPublicById"
 )
 
 // UserServiceClient is the client API for UserService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
-	GetUserById(ctx context.Context, in *GetOneRequest, opts ...grpc.CallOption) (*UserResponse, error)
-	GetUsersById(ctx context.Context, in *GetManyRequest, opts ...grpc.CallOption) (*UsersPublicResponse, error)
+	GetUserPublicById(ctx context.Context, in *GetOneRequest, opts ...grpc.CallOption) (*UserPublicResponse, error)
+	GetUsersPublicById(ctx context.Context, in *GetManyRequest, opts ...grpc.CallOption) (*UsersPublicResponse, error)
 }
 
 type userServiceClient struct {
@@ -39,20 +39,20 @@ func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
 	return &userServiceClient{cc}
 }
 
-func (c *userServiceClient) GetUserById(ctx context.Context, in *GetOneRequest, opts ...grpc.CallOption) (*UserResponse, error) {
+func (c *userServiceClient) GetUserPublicById(ctx context.Context, in *GetOneRequest, opts ...grpc.CallOption) (*UserPublicResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UserResponse)
-	err := c.cc.Invoke(ctx, UserService_GetUserById_FullMethodName, in, out, cOpts...)
+	out := new(UserPublicResponse)
+	err := c.cc.Invoke(ctx, UserService_GetUserPublicById_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) GetUsersById(ctx context.Context, in *GetManyRequest, opts ...grpc.CallOption) (*UsersPublicResponse, error) {
+func (c *userServiceClient) GetUsersPublicById(ctx context.Context, in *GetManyRequest, opts ...grpc.CallOption) (*UsersPublicResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UsersPublicResponse)
-	err := c.cc.Invoke(ctx, UserService_GetUsersById_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UserService_GetUsersPublicById_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +63,8 @@ func (c *userServiceClient) GetUsersById(ctx context.Context, in *GetManyRequest
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
 type UserServiceServer interface {
-	GetUserById(context.Context, *GetOneRequest) (*UserResponse, error)
-	GetUsersById(context.Context, *GetManyRequest) (*UsersPublicResponse, error)
+	GetUserPublicById(context.Context, *GetOneRequest) (*UserPublicResponse, error)
+	GetUsersPublicById(context.Context, *GetManyRequest) (*UsersPublicResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -75,11 +75,11 @@ type UserServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedUserServiceServer struct{}
 
-func (UnimplementedUserServiceServer) GetUserById(context.Context, *GetOneRequest) (*UserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserById not implemented")
+func (UnimplementedUserServiceServer) GetUserPublicById(context.Context, *GetOneRequest) (*UserPublicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserPublicById not implemented")
 }
-func (UnimplementedUserServiceServer) GetUsersById(context.Context, *GetManyRequest) (*UsersPublicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUsersById not implemented")
+func (UnimplementedUserServiceServer) GetUsersPublicById(context.Context, *GetManyRequest) (*UsersPublicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUsersPublicById not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -102,38 +102,38 @@ func RegisterUserServiceServer(s grpc.ServiceRegistrar, srv UserServiceServer) {
 	s.RegisterService(&UserService_ServiceDesc, srv)
 }
 
-func _UserService_GetUserById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UserService_GetUserPublicById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetOneRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).GetUserById(ctx, in)
+		return srv.(UserServiceServer).GetUserPublicById(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_GetUserById_FullMethodName,
+		FullMethod: UserService_GetUserPublicById_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetUserById(ctx, req.(*GetOneRequest))
+		return srv.(UserServiceServer).GetUserPublicById(ctx, req.(*GetOneRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_GetUsersById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UserService_GetUsersPublicById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetManyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).GetUsersById(ctx, in)
+		return srv.(UserServiceServer).GetUsersPublicById(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_GetUsersById_FullMethodName,
+		FullMethod: UserService_GetUsersPublicById_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetUsersById(ctx, req.(*GetManyRequest))
+		return srv.(UserServiceServer).GetUsersPublicById(ctx, req.(*GetManyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -146,12 +146,12 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetUserById",
-			Handler:    _UserService_GetUserById_Handler,
+			MethodName: "GetUserPublicById",
+			Handler:    _UserService_GetUserPublicById_Handler,
 		},
 		{
-			MethodName: "GetUsersById",
-			Handler:    _UserService_GetUsersById_Handler,
+			MethodName: "GetUsersPublicById",
+			Handler:    _UserService_GetUsersPublicById_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
