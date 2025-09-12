@@ -115,6 +115,16 @@ service ProductService {
   rpc PermanentlyDeleteTag(PermanentlyDeleteOneRequest) returns (DeletedResponse);
 
   rpc PermanentlyDeleteTags(PermanentlyDeleteManyRequest) returns (DeletedResponse);
+
+  rpc GetImagesByProductId(GetByProductId) returns (ImagesResponse);
+}
+
+message GetByProductId {
+  string product_id = 1;
+}
+
+message ImagesResponse {
+  repeated BaseImageResponse images = 1;
 }
 
 message PaginationMetaResponse {

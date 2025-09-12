@@ -64,3 +64,12 @@ func (r *imageRepositoryImpl) UpdateFileID(ctx context.Context, id string, fileI
 
 	return nil
 }
+
+func (r *imageRepositoryImpl) FindByProductIDWithColor(ctx context.Context, productID string) ([]*model.Image, error) {
+	var images []*model.Image
+	if err := r.db.WithContext(ctx).Preload("Color").Where("product_id = ?", productID).Find(&images).Error; err != nil {
+		return nil, err
+	}
+
+	return images, nil
+}

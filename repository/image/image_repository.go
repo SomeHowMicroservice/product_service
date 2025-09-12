@@ -19,4 +19,6 @@ type ImageRepository interface {
 	DeleteAllByID(ctx context.Context, ids []string) error
 
 	DeleteAllByIDTx(ctx context.Context, tx *gorm.DB, ids []string) error
+
+	FindByProductIDWithColor(ctx context.Context, productID string) ([]*model.Image, error)
 }

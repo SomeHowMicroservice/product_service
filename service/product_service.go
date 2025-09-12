@@ -120,4 +120,6 @@ type ProductService interface {
 	PermanentlyDeleteTag(ctx context.Context, req *productpb.PermanentlyDeleteOneRequest) error
 
 	PermanentlyDeleteTags(ctx context.Context, req *productpb.PermanentlyDeleteManyRequest) error
+
+	GetImagesByProductID(ctx context.Context, productID string) ([]*model.Image, error)
 }

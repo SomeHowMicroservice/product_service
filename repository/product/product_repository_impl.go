@@ -73,7 +73,7 @@ func (r *productRepositoryImpl) FindByID(ctx context.Context, id string) (*model
 	return findByIDBase(ctx, r.db, id, false, nil)
 }
 
-func (r *productRepositoryImpl) FindAllByCategorySlug(ctx context.Context, categorySlug string) ([]*model.Product, error) {
+func (r *productRepositoryImpl) FindByCategorySlug(ctx context.Context, categorySlug string) ([]*model.Product, error) {
 	var products []*model.Product
 	if err := r.db.WithContext(ctx).Where("id IN (?)", r.db.Table("product_categories pc")).Select("pc.product_id").Joins("JOIN categories c ON c.id = pc.category_id").Where("c.slug = ? AND products.is_deleted = false", categorySlug).Preload("Categories").Preload("Variants").Preload("Variants.Color").Preload("Variants.Size").Preload("Variants.Inventory").Preload("Images").Preload("Images.Color").Find(&products).Error; err != nil {
 		return nil, err

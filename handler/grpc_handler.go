@@ -324,6 +324,22 @@ func (h *GRPCHandler) GetProductById(ctx context.Context, req *productpb.GetOneR
 	return convertedProduct, nil
 }
 
+func (h *GRPCHandler) GetImagesByProductId(ctx context.Context, req *productpb.GetByProductId) (*productpb.ImagesResponse, error) {
+	images, err := h.svc.GetImagesByProductID(ctx, req.ProductId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	imageResponses := []*productpb.BaseImageResponse{}
+	for _, img := range images {
+		imageResponses = append(imageResponses, toBaseImageResponse(img))
+	}
+
+	return &productpb.ImagesResponse{
+		Images: imageResponses,
+	}, nil
+}
+
 func (h *GRPCHandler) GetAllProductsAdmin(ctx context.Context, req *productpb.GetAllProductsAdminRequest) (*productpb.ProductsAdminResponse, error) {
 	products, meta, err := h.svc.GetAllProductsAdmin(ctx, req)
 	if err != nil {

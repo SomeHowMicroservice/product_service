@@ -27,7 +27,7 @@ type ProductRepository interface {
 
 	FindByIDWithCategoriesAndTagsTx(ctx context.Context, tx *gorm.DB, id string) (*model.Product, error)
 
-	FindAllByCategorySlug(ctx context.Context, categorySlug string) ([]*model.Product, error)
+	FindByCategorySlug(ctx context.Context, categorySlug string) ([]*model.Product, error)
 
 	UpdateCategoriesTx(ctx context.Context, tx *gorm.DB, product *model.Product, categories []*model.Category) error
 

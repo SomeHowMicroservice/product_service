@@ -211,7 +211,7 @@ func (s *productServiceImpl) GetProductsByCategory(ctx context.Context, category
 		return nil, common.ErrCategoryNotFound
 	}
 
-	products, err := s.productRepo.FindAllByCategorySlug(ctx, categorySlug)
+	products, err := s.productRepo.FindByCategorySlug(ctx, categorySlug)
 	if err != nil {
 		return nil, fmt.Errorf("lấy danh sách sản phẩm theo danh mục thất bại: %w", err)
 	}
@@ -2127,6 +2127,15 @@ func (s *productServiceImpl) PermanentlyDeleteTags(ctx context.Context, req *pro
 	}
 
 	return nil
+}
+
+func (s *productServiceImpl) GetImagesByProductID(ctx context.Context, productID string) ([]*model.Image, error) {
+	images, err := s.imageRepo.FindByProductIDWithColor(ctx, productID)
+	if err != nil {
+		return nil, fmt.Errorf("lấy ảnh của sản phẩm thất bại: %w", err)
+	}
+
+	return images, nil
 }
 
 func (s *productServiceImpl) validateParentRelations(ctx context.Context, parentIDs []string) error {

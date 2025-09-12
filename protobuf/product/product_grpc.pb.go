@@ -75,6 +75,7 @@ const (
 	ProductService_PermanentlyDeleteSizes_FullMethodName      = "/product.ProductService/PermanentlyDeleteSizes"
 	ProductService_PermanentlyDeleteTag_FullMethodName        = "/product.ProductService/PermanentlyDeleteTag"
 	ProductService_PermanentlyDeleteTags_FullMethodName       = "/product.ProductService/PermanentlyDeleteTags"
+	ProductService_GetImagesByProductId_FullMethodName        = "/product.ProductService/GetImagesByProductId"
 )
 
 // ProductServiceClient is the client API for ProductService service.
@@ -137,6 +138,7 @@ type ProductServiceClient interface {
 	PermanentlyDeleteSizes(ctx context.Context, in *PermanentlyDeleteManyRequest, opts ...grpc.CallOption) (*DeletedResponse, error)
 	PermanentlyDeleteTag(ctx context.Context, in *PermanentlyDeleteOneRequest, opts ...grpc.CallOption) (*DeletedResponse, error)
 	PermanentlyDeleteTags(ctx context.Context, in *PermanentlyDeleteManyRequest, opts ...grpc.CallOption) (*DeletedResponse, error)
+	GetImagesByProductId(ctx context.Context, in *GetByProductId, opts ...grpc.CallOption) (*ImagesResponse, error)
 }
 
 type productServiceClient struct {
@@ -707,6 +709,16 @@ func (c *productServiceClient) PermanentlyDeleteTags(ctx context.Context, in *Pe
 	return out, nil
 }
 
+func (c *productServiceClient) GetImagesByProductId(ctx context.Context, in *GetByProductId, opts ...grpc.CallOption) (*ImagesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ImagesResponse)
+	err := c.cc.Invoke(ctx, ProductService_GetImagesByProductId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProductServiceServer is the server API for ProductService service.
 // All implementations must embed UnimplementedProductServiceServer
 // for forward compatibility.
@@ -767,6 +779,7 @@ type ProductServiceServer interface {
 	PermanentlyDeleteSizes(context.Context, *PermanentlyDeleteManyRequest) (*DeletedResponse, error)
 	PermanentlyDeleteTag(context.Context, *PermanentlyDeleteOneRequest) (*DeletedResponse, error)
 	PermanentlyDeleteTags(context.Context, *PermanentlyDeleteManyRequest) (*DeletedResponse, error)
+	GetImagesByProductId(context.Context, *GetByProductId) (*ImagesResponse, error)
 	mustEmbedUnimplementedProductServiceServer()
 }
 
@@ -944,6 +957,9 @@ func (UnimplementedProductServiceServer) PermanentlyDeleteTag(context.Context, *
 }
 func (UnimplementedProductServiceServer) PermanentlyDeleteTags(context.Context, *PermanentlyDeleteManyRequest) (*DeletedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PermanentlyDeleteTags not implemented")
+}
+func (UnimplementedProductServiceServer) GetImagesByProductId(context.Context, *GetByProductId) (*ImagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetImagesByProductId not implemented")
 }
 func (UnimplementedProductServiceServer) mustEmbedUnimplementedProductServiceServer() {}
 func (UnimplementedProductServiceServer) testEmbeddedByValue()                        {}
@@ -1974,6 +1990,24 @@ func _ProductService_PermanentlyDeleteTags_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProductService_GetImagesByProductId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetByProductId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProductServiceServer).GetImagesByProductId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ProductService_GetImagesByProductId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProductServiceServer).GetImagesByProductId(ctx, req.(*GetByProductId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ProductService_ServiceDesc is the grpc.ServiceDesc for ProductService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2204,6 +2238,10 @@ var ProductService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PermanentlyDeleteTags",
 			Handler:    _ProductService_PermanentlyDeleteTags_Handler,
+		},
+		{
+			MethodName: "GetImagesByProductId",
+			Handler:    _ProductService_GetImagesByProductId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
