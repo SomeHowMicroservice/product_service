@@ -73,8 +73,9 @@ func RegisterUploadImageConsumer(router *message.Router, publisher message.Publi
 
 			if done {
 				event := &common.ImageUploadedEvent{
-					Service: "product",
-					UserID:  imageMsg.UserID,
+					Service:   "product",
+					UserID:    imageMsg.UserID,
+					ProductID: imageMsg.ProductID,
 				}
 				body, _ := sonic.Marshal(event)
 				out := message.NewMessage(watermill.NewUUID(), body)

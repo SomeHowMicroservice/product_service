@@ -19,8 +19,9 @@ type UploadFileResponse struct {
 }
 
 type ImageUploadedEvent struct {
-	Service string `json:"service"`
-	UserID  string `json:"user_id"`
+	Service   string `json:"service"`
+	UserID    string `json:"user_id"`
+	ProductID string `json:"product_id"`
 }
 
 type Preload struct {
