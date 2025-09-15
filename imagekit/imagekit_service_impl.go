@@ -7,6 +7,7 @@ import (
 	"github.com/SomeHowMicroservice/shm-be/product/common"
 	"github.com/SomeHowMicroservice/shm-be/product/config"
 	"github.com/imagekit-developer/imagekit-go"
+	"github.com/imagekit-developer/imagekit-go/api/media"
 	"github.com/imagekit-developer/imagekit-go/api/uploader"
 )
 
@@ -40,15 +41,21 @@ func (s *imageKitServiceImpl) UploadFromBase64(ctx context.Context, req *common.
 	}
 
 	return &common.UploadFileResponse{
-		FileID:       result.Data.FileId,
-		Name:         result.Data.Name,
-		URL:          result.Data.Url,
+		FileID: result.Data.FileId,
+		Name:   result.Data.Name,
+		URL:    result.Data.Url,
 	}, nil
 }
 
-func (s *imageKitServiceImpl) DeleteFile(ctx context.Context, fileID string) error {
+func (s *imageKitServiceImpl) DeleteFile(ctx context.Context, fileID string, fileURL string) error {
 	if _, err := s.client.Media.DeleteFile(ctx, fileID); err != nil {
 		return fmt.Errorf("xóa file thất bại: %w", err)
+	}
+
+	if _, err := s.client.Media.PurgeCache(ctx, media.PurgeCacheParam{
+		Url: fileURL,
+	}); err != nil {
+		return fmt.Errorf("xóa cache ảnh thất bại: %w", err)
 	}
 
 	return nil

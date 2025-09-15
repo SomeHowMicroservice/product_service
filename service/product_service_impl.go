@@ -1196,18 +1196,22 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 				return fmt.Errorf("xóa danh sách hình ảnh thất bại: %w", err)
 			}
 
-			publishChan := make(chan string, len(images))
+			publishChan := make(chan common.DeleteFileRequest, len(images))
 
 			for _, image := range images {
-				if strings.TrimSpace(image.FileID) != "" {
-					publishChan <- image.FileID
+				if strings.TrimSpace(image.FileID) != "" && strings.TrimSpace(image.Url) != "" {
+					deleteReq := common.DeleteFileRequest{
+						FileID: image.FileID,
+						FileUrl: image.Url,
+					}
+					publishChan <- deleteReq
 				}
 			}
 			close(publishChan)
 
 			go func() {
 				for deleteReq := range publishChan {
-					body := []byte(deleteReq)
+					body, _ := sonic.Marshal(deleteReq)
 					if err := mq.PublishMessage(s.publisher, common.DeleteTopic, body); err != nil {
 						log.Printf("publish delete image msg thất bại: %v", err)
 					}
@@ -1989,17 +1993,21 @@ func (s *productServiceImpl) PermanentlyDeleteProduct(ctx context.Context, req *
 		return fmt.Errorf("xóa sản phẩm thất bại: %w", err)
 	}
 
-	publishChan := make(chan string, len(product.Images))
+	publishChan := make(chan common.DeleteFileRequest, len(product.Images))
 	for _, image := range product.Images {
-		if strings.TrimSpace(image.FileID) != "" {
-			publishChan <- image.FileID
+		if strings.TrimSpace(image.FileID) != "" && strings.TrimSpace(image.Url) != "" {
+			deleteReq := common.DeleteFileRequest{
+				FileID: image.FileID,
+				FileUrl: image.Url,
+			}
+			publishChan <- deleteReq
 		}
 	}
 	close(publishChan)
 
 	go func() {
 		for deleteReq := range publishChan {
-			body := []byte(deleteReq)
+			body, _ := sonic.Marshal(deleteReq)
 			if err := mq.PublishMessage(s.publisher, common.DeleteTopic, body); err != nil {
 				log.Printf("publish delete image msg thất bại: %v", err)
 			}
@@ -2022,27 +2030,30 @@ func (s *productServiceImpl) PermanentlyDeleteProducts(ctx context.Context, req 
 		return fmt.Errorf("xóa danh sách sản phẩm thất bại: %w", err)
 	}
 
-	imageFileIDs := []string{}
+	deleteReqs := []common.DeleteFileRequest{}
 	seen := make(map[string]bool)
 	for _, product := range products {
 		for _, image := range product.Images {
-			if !seen[image.FileID] && strings.TrimSpace(image.FileID) != "" {
+			if !seen[image.FileID] && strings.TrimSpace(image.FileID) != "" && strings.TrimSpace(image.Url) != "" {
 				seen[image.FileID] = true
-				imageFileIDs = append(imageFileIDs, image.FileID)
+				deleteReqs = append(deleteReqs, common.DeleteFileRequest{
+					FileID: image.FileID,
+					FileUrl: image.Url,
+				})
 			}
 		}
 	}
 
-	publishChan := make(chan string, len(imageFileIDs))
+	publishChan := make(chan common.DeleteFileRequest, len(deleteReqs))
 
-	for _, fileID := range imageFileIDs {
-		publishChan <- fileID
+	for _, deleteReq := range deleteReqs {
+		publishChan <- deleteReq
 	}
 	close(publishChan)
 
 	go func() {
 		for deleteReq := range publishChan {
-			body := []byte(deleteReq)
+			body, _ := sonic.Marshal(deleteReq)
 			if err := mq.PublishMessage(s.publisher, common.DeleteTopic, body); err != nil {
 				log.Printf("publish delete image msg thất bại: %v", err)
 			}

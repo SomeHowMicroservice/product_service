@@ -93,13 +93,17 @@ func RegisterUploadImageConsumer(router *message.Router, publisher message.Publi
 }
 
 func handleDeleteImage(msg *message.Message, imagekit imagekit.ImageKitService) error {
-	fileID := string(msg.Payload)
+	var imageMsg common.DeleteFileRequest
+	if err := sonic.Unmarshal(msg.Payload, &imageMsg); err != nil {
+		return fmt.Errorf("unmarshal json thất bại: %w", err)
+	}
+
 	ctx := context.Background()
 
-	if err := imagekit.DeleteFile(ctx, fileID); err != nil {
+	if err := imagekit.DeleteFile(ctx, imageMsg.FileID, imageMsg.FileUrl); err != nil {
 		return fmt.Errorf("xóa file thất bại: %w", err)
 	}
 
-	log.Printf("Xóa hình ảnh có FileID: %s thành công", fileID)
+	log.Printf("Xóa hình ảnh có Url: %s thành công", imageMsg.FileUrl)
 	return nil
 }
