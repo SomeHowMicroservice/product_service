@@ -896,7 +896,9 @@ func (s *productServiceImpl) CreateProduct(ctx context.Context, req *productpb.C
 	go func() {
 		for uploadReq := range publishChan {
 			body, _ := sonic.Marshal(uploadReq)
-			mq.PublishMessage(s.publisher, common.UploadTopic, body)
+			if err := mq.PublishMessage(s.publisher, common.UploadTopic, body); err != nil {
+				log.Printf("publish delete image msg thất bại: %v", err)
+			}
 		}
 	}()
 
@@ -960,7 +962,7 @@ func (s *productServiceImpl) GetAllProductsAdmin(ctx context.Context, req *produ
 		req.Limit = 100
 	}
 
-	query := &common.PaginationQuery{
+	query := common.PaginationQuery{
 		Page:       int(req.Page),
 		Limit:      int(req.Limit),
 		Sort:       req.Sort,
@@ -1274,7 +1276,9 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 			go func() {
 				for uploadReq := range publishChan {
 					body, _ := sonic.Marshal(uploadReq)
-					mq.PublishMessage(s.publisher, common.UploadTopic, body)
+					if err := mq.PublishMessage(s.publisher, common.UploadTopic, body); err != nil {
+						log.Printf("publish delete image msg thất bại: %v", err)
+					}
 				}
 			}()
 		}
@@ -1472,7 +1476,7 @@ func (s *productServiceImpl) GetDeletedProducts(ctx context.Context, req *produc
 		req.Limit = 100
 	}
 
-	query := &common.PaginationQuery{
+	query := common.PaginationQuery{
 		Page:       int(req.Page),
 		Limit:      int(req.Limit),
 		Sort:       req.Sort,

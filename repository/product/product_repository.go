@@ -41,7 +41,7 @@ type ProductRepository interface {
 
 	UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error
 
-	FindAllDeletedPaginatedWithCategoriesAndThumbnail(ctx context.Context, query *common.PaginationQuery) ([]*model.Product, int64, error)
+	FindAllDeletedPaginatedWithCategoriesAndThumbnail(ctx context.Context, query common.PaginationQuery) ([]*model.Product, int64, error)
 
 	FindDeletedByIDWithDetails(ctx context.Context, id string) (*model.Product, error)
 
@@ -55,5 +55,5 @@ type ProductRepository interface {
 
 	DeleteAllByID(ctx context.Context, ids []string) error
 
-	FindAllPaginatedWithCategoriesAndThumbnail(ctx context.Context, query *common.PaginationQuery) ([]*model.Product, int64, error) 
+	FindAllPaginatedWithCategoriesAndThumbnail(ctx context.Context, query common.PaginationQuery) ([]*model.Product, int64, error) 
 }

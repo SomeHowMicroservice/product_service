@@ -152,13 +152,13 @@ func (r *productRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string,
 	return r.db.WithContext(ctx).Model(&model.Product{}).Where("id IN ?", ids).Updates(updateData).Error
 }
 
-func (r *productRepositoryImpl) FindAllDeletedPaginatedWithCategoriesAndThumbnail(ctx context.Context, query *common.PaginationQuery) ([]*model.Product, int64, error) {
+func (r *productRepositoryImpl) FindAllDeletedPaginatedWithCategoriesAndThumbnail(ctx context.Context, query common.PaginationQuery) ([]*model.Product, int64, error) {
 	return r.findAllPaginatedBase(ctx, true, query,
 		&common.Preload{Relation: "Categories"},
 		&common.Preload{Relation: "Images", Scope: getThumbnail})
 }
 
-func (r *productRepositoryImpl) FindAllPaginatedWithCategoriesAndThumbnail(ctx context.Context, query *common.PaginationQuery) ([]*model.Product, int64, error) {
+func (r *productRepositoryImpl) FindAllPaginatedWithCategoriesAndThumbnail(ctx context.Context, query common.PaginationQuery) ([]*model.Product, int64, error) {
 	return r.findAllPaginatedBase(ctx, false, query,
 		&common.Preload{Relation: "Categories"},
 		&common.Preload{Relation: "Images", Scope: getThumbnail})
@@ -171,7 +171,7 @@ func (r *productRepositoryImpl) FindByIDWithCategoriesAndTagsTx(ctx context.Cont
 		&common.Preload{Relation: "Tags"})
 }
 
-func (r *productRepositoryImpl) findAllPaginatedBase(ctx context.Context, isDeleted bool, pQuery *common.PaginationQuery, preloads ...*common.Preload) ([]*model.Product, int64, error) {
+func (r *productRepositoryImpl) findAllPaginatedBase(ctx context.Context, isDeleted bool, pQuery common.PaginationQuery, preloads ...*common.Preload) ([]*model.Product, int64, error) {
 	var products []*model.Product
 	var total int64
 
@@ -201,7 +201,7 @@ func (r *productRepositoryImpl) findAllPaginatedBase(ctx context.Context, isDele
 	return products, total, nil
 }
 
-func (r *productRepositoryImpl) applyFilters(db *gorm.DB, query *common.PaginationQuery) *gorm.DB {
+func (r *productRepositoryImpl) applyFilters(db *gorm.DB, query common.PaginationQuery) *gorm.DB {
 	if query.Search != "" {
 		searchTerm := "%" + strings.ToLower(query.Search) + "%"
 		db = db.Where("LOWER(title) LIKE ?", searchTerm)
@@ -218,7 +218,7 @@ func (r *productRepositoryImpl) applyFilters(db *gorm.DB, query *common.Paginati
 	return db
 }
 
-func (r *productRepositoryImpl) applySorting(db *gorm.DB, query *common.PaginationQuery) *gorm.DB {
+func (r *productRepositoryImpl) applySorting(db *gorm.DB, query common.PaginationQuery) *gorm.DB {
 	if query.Sort == "" {
 		query.Sort = "created_at"
 	}

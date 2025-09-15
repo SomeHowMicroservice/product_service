@@ -68,11 +68,10 @@ func RegisterUploadImageConsumer(router *message.Router, publisher message.Publi
 			done := uploadProgress[imageMsg.ProductID] == uploadTargets[imageMsg.ProductID]
 			mu.Unlock()
 
-			log.Printf("Ảnh %s của product %s upload xong (%d/%d)",
-				imageMsg.ImageID, imageMsg.ProductID, uploadProgress[imageMsg.ProductID], imageMsg.TotalImages)
+			log.Printf("Ảnh %s của product %s upload xong (%d/%d)", imageMsg.ImageID, imageMsg.ProductID, uploadProgress[imageMsg.ProductID], imageMsg.TotalImages)
 
 			if done {
-				event := &common.ImageUploadedEvent{
+				event := common.ImageUploadedEvent{
 					Service:   "product",
 					UserID:    imageMsg.UserID,
 					ProductID: imageMsg.ProductID,
@@ -102,33 +101,5 @@ func handleDeleteImage(msg *message.Message, imagekit imagekit.ImageKitService) 
 	}
 
 	log.Printf("Xóa hình ảnh có FileID: %s thành công", fileID)
-	return nil
-}
-
-func handleUploadImage(msg *message.Message, imagekit imagekit.ImageKitService, imageRepo imageRepo.ImageRepository) error {
-	var imageMsg *common.Base64UploadRequest
-	if err := sonic.Unmarshal(msg.Payload, &imageMsg); err != nil {
-		return fmt.Errorf("unmarshal json thất bại: %w", err)
-	}
-
-	ctx := context.Background()
-
-	res, err := imagekit.UploadFromBase64(ctx, imageMsg)
-	if err != nil {
-		return fmt.Errorf("upload image thất bại: %w", err)
-	}
-	log.Printf("Tải lên hình ảnh thành công: %s", res.URL)
-
-	fileID := res.FileID
-	url := res.URL
-	updateData := map[string]any{
-		"file_id": fileID,
-		"url":     url,
-	}
-	if err = imageRepo.Update(ctx, imageMsg.ImageID, updateData); err != nil {
-		return fmt.Errorf("cập nhật database thất bại: %w", err)
-	}
-	log.Printf("Cập nhật ảnh có FileID: %s và url: %s thành công", fileID, url)
-
 	return nil
 }
