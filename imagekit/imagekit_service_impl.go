@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/SomeHowMicroservice/shm-be/product/common"
-	"github.com/SomeHowMicroservice/shm-be/product/config"
+	"github.com/SomeHowMicroservice/product/common"
+	"github.com/SomeHowMicroservice/product/config"
 	"github.com/imagekit-developer/imagekit-go"
 	"github.com/imagekit-developer/imagekit-go/api/media"
 	"github.com/imagekit-developer/imagekit-go/api/uploader"

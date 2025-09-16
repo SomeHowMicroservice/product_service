@@ -6,9 +6,9 @@ import (
 	"log"
 	"sync"
 
-	"github.com/SomeHowMicroservice/shm-be/product/common"
-	"github.com/SomeHowMicroservice/shm-be/product/imagekit"
-	imageRepo "github.com/SomeHowMicroservice/shm-be/product/repository/image"
+	"github.com/SomeHowMicroservice/product/common"
+	"github.com/SomeHowMicroservice/product/imagekit"
+	imageRepo "github.com/SomeHowMicroservice/product/repository/image"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/bytedance/sonic"

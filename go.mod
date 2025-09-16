@@ -1,4 +1,4 @@
-module github.com/SomeHowMicroservice/shm-be/product
+module github.com/SomeHowMicroservice/product
 
 go 1.23.4
 

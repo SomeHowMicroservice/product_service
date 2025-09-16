@@ -3,8 +3,8 @@ package initialization
 import (
 	"fmt"
 
-	"github.com/SomeHowMicroservice/shm-be/product/common"
-	"github.com/SomeHowMicroservice/shm-be/product/config"
+	"github.com/SomeHowMicroservice/product/common"
+	"github.com/SomeHowMicroservice/product/config"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v3/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"

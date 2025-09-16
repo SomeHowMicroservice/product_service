@@ -7,9 +7,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/SomeHowMicroservice/shm-be/product/config"
-	"github.com/SomeHowMicroservice/shm-be/product/initialization"
-	"github.com/SomeHowMicroservice/shm-be/product/mq"
+	"github.com/SomeHowMicroservice/product/config"
+	"github.com/SomeHowMicroservice/product/initialization"
+	"github.com/SomeHowMicroservice/product/mq"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"

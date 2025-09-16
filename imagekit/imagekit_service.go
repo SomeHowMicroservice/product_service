@@ -3,7 +3,7 @@ package imagekit
 import (
 	"context"
 
-	"github.com/SomeHowMicroservice/shm-be/product/common"
+	"github.com/SomeHowMicroservice/product/common"
 )
 
 type ImageKitService interface {

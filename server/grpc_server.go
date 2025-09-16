@@ -3,12 +3,12 @@ package server
 import (
 	"time"
 
-	"github.com/SomeHowMicroservice/shm-be/product/config"
-	"github.com/SomeHowMicroservice/shm-be/product/container"
-	"github.com/SomeHowMicroservice/shm-be/product/imagekit"
-	productpb "github.com/SomeHowMicroservice/shm-be/product/protobuf/product"
-	userpb "github.com/SomeHowMicroservice/shm-be/product/protobuf/user"
-	imageRepo "github.com/SomeHowMicroservice/shm-be/product/repository/image"
+	"github.com/SomeHowMicroservice/product/config"
+	"github.com/SomeHowMicroservice/product/container"
+	"github.com/SomeHowMicroservice/product/imagekit"
+	productpb "github.com/SomeHowMicroservice/product/protobuf/product"
+	userpb "github.com/SomeHowMicroservice/product/protobuf/user"
+	imageRepo "github.com/SomeHowMicroservice/product/repository/image"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"

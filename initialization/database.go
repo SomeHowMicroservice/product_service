@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/SomeHowMicroservice/shm-be/product/config"
-	"github.com/SomeHowMicroservice/shm-be/product/model"
+	"github.com/SomeHowMicroservice/product/config"
+	"github.com/SomeHowMicroservice/product/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

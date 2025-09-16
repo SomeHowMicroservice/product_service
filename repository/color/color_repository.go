@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/SomeHowMicroservice/shm-be/product/model"
+	"github.com/SomeHowMicroservice/product/model"
 	"gorm.io/gorm"
 )
 

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/SomeHowMicroservice/shm-be/product/common"
-	"github.com/SomeHowMicroservice/shm-be/product/model"
+	"github.com/SomeHowMicroservice/product/common"
+	"github.com/SomeHowMicroservice/product/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

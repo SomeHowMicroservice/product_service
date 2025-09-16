@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/SomeHowMicroservice/shm-be/product/common"
-	"github.com/SomeHowMicroservice/shm-be/product/model"
-	productpb "github.com/SomeHowMicroservice/shm-be/product/protobuf/product"
+	"github.com/SomeHowMicroservice/product/common"
+	"github.com/SomeHowMicroservice/product/model"
+	productpb "github.com/SomeHowMicroservice/product/protobuf/product"
 )
 
 type ProductService interface {

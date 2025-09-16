@@ -3,10 +3,10 @@ package handler
 import (
 	"context"
 
-	"github.com/SomeHowMicroservice/shm-be/product/common"
-	"github.com/SomeHowMicroservice/shm-be/product/model"
-	productpb "github.com/SomeHowMicroservice/shm-be/product/protobuf/product"
-	"github.com/SomeHowMicroservice/shm-be/product/service"
+	"github.com/SomeHowMicroservice/product/common"
+	"github.com/SomeHowMicroservice/product/model"
+	productpb "github.com/SomeHowMicroservice/product/protobuf/product"
+	"github.com/SomeHowMicroservice/product/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
