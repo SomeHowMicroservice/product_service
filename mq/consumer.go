@@ -84,6 +84,8 @@ func RegisterUploadImageConsumer(router *message.Router, publisher message.Publi
 				delete(uploadTargets, imageMsg.ProductID)
 				mu.Unlock()
 
+				log.Println("Upload xong ảnh và gửi sự kiện rồi")
+
 				return []*message.Message{out}, nil
 			}
 
@@ -93,17 +95,14 @@ func RegisterUploadImageConsumer(router *message.Router, publisher message.Publi
 }
 
 func handleDeleteImage(msg *message.Message, imagekit imagekit.ImageKitService) error {
-	var imageMsg common.DeleteFileRequest
-	if err := sonic.Unmarshal(msg.Payload, &imageMsg); err != nil {
-		return fmt.Errorf("unmarshal json thất bại: %w", err)
-	}
+	fileID := string(msg.Payload)
 
 	ctx := context.Background()
 
-	if err := imagekit.DeleteFile(ctx, imageMsg.FileID, imageMsg.FileUrl); err != nil {
+	if err := imagekit.DeleteFile(ctx, fileID); err != nil {
 		return fmt.Errorf("xóa file thất bại: %w", err)
 	}
 
-	log.Printf("Xóa hình ảnh có Url: %s thành công", imageMsg.FileUrl)
+	log.Printf("Xóa hình ảnh có FileID: %s thành công", fileID)
 	return nil
 }

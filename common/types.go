@@ -12,11 +12,6 @@ type Base64UploadRequest struct {
 	TotalImages uint16 `json:"total_images"`
 }
 
-type DeleteFileRequest struct {
-	FileID string `json:"file_id"`
-	FileUrl string `json:"file_url"`
-}
-
 type UploadFileResponse struct {
 	FileID string `json:"file_id"`
 	Name   string `json:"name"`
