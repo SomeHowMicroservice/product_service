@@ -1,12 +1,7 @@
 package main
 
 import (
-	"context"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
 	"github.com/SomeHowMicroservice/product/config"
 	"github.com/SomeHowMicroservice/product/server"
@@ -18,32 +13,20 @@ func main() {
 		log.Fatalf("Tải cấu hình Product Service thất bại: %v", err)
 	}
 
-	server, err := server.NewServer(cfg)
+	s, err := server.NewServer(cfg)
 	if err != nil {
 		log.Fatalf("Khởi tạo service thất bại: %v", err)
 	}
 
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-
-	errCh := make(chan error, 1)
+	ch := make(chan error, 1)
 
 	go func() {
-		if err := server.Start(); err != nil {
-			errCh <- err
+		if err := s.Start(); err != nil {
+			ch <- err
 		}
 	}()
 
 	log.Println("Chạy service thành công")
 
-	select {
-		case <-stop:
-			log.Println("Nhận được tín hiệu dừng server")
-		case err := <- errCh:
-			log.Printf("Chạy service thất bại: %v", err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	server.Shutdown(ctx)
+	s.GracefulShutdown(ch)
 }
