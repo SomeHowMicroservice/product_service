@@ -14,7 +14,9 @@ type VariantRepository interface {
 
 	ExistsBySKU(ctx context.Context, sku string) (bool, error)
 
-	FindAllByID(ctx context.Context, ids []string) ([]*model.Variant, error)
+	FindAllByIDTx(ctx context.Context, tx *gorm.DB, ids []string) ([]*model.Variant, error)
+
+	FindAllByIDWithInventoryTx(ctx context.Context, tx *gorm.DB, ids []string) ([]*model.Variant, error)
 
 	UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error
 

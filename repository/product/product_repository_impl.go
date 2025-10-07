@@ -33,31 +33,31 @@ func (r *productRepositoryImpl) ExistsBySlug(ctx context.Context, slug string) (
 }
 
 func (r *productRepositoryImpl) FindBySlugWithDetails(ctx context.Context, slug string) (*model.Product, error) {
-	return r.findBySlugBase(ctx, slug, "Categories", "Tags", "Variants", "Variants.Color", "Variants.Size", "Variants.Inventory", "Images", "Images.Color")
+	return findBySlugBase(ctx, r.db, slug, "Categories", "Tags", "Variants", "Variants.Color", "Variants.Size", "Variants.Inventory", "Images", "Images.Color")
 }
 
 func (r *productRepositoryImpl) FindByIDWithDetails(ctx context.Context, id string) (*model.Product, error) {
 	return findByIDBase(ctx, r.db, id, false, nil,
-		&common.Preload{Relation: "Categories"},
-		&common.Preload{Relation: "Tags", Scope: notDeleted},
-		&common.Preload{Relation: "Variants"},
-		&common.Preload{Relation: "Variants.Color", Scope: notDeleted},
-		&common.Preload{Relation: "Variants.Size", Scope: notDeleted},
-		&common.Preload{Relation: "Variants.Inventory"},
-		&common.Preload{Relation: "Images"},
-		&common.Preload{Relation: "Images.Color", Scope: notDeleted})
+		common.Preload{Relation: "Categories"},
+		common.Preload{Relation: "Tags", Scope: notDeleted},
+		common.Preload{Relation: "Variants"},
+		common.Preload{Relation: "Variants.Color", Scope: notDeleted},
+		common.Preload{Relation: "Variants.Size", Scope: notDeleted},
+		common.Preload{Relation: "Variants.Inventory"},
+		common.Preload{Relation: "Images"},
+		common.Preload{Relation: "Images.Color", Scope: notDeleted})
 }
 
 func (r *productRepositoryImpl) FindDeletedByIDWithDetails(ctx context.Context, id string) (*model.Product, error) {
 	return findByIDBase(ctx, r.db, id, true, nil,
-		&common.Preload{Relation: "Categories"},
-		&common.Preload{Relation: "Tags", Scope: notDeleted},
-		&common.Preload{Relation: "Variants"},
-		&common.Preload{Relation: "Variants.Color", Scope: notDeleted},
-		&common.Preload{Relation: "Variants.Size", Scope: notDeleted},
-		&common.Preload{Relation: "Variants.Inventory"},
-		&common.Preload{Relation: "Images"},
-		&common.Preload{Relation: "Images.Color", Scope: notDeleted})
+		common.Preload{Relation: "Categories"},
+		common.Preload{Relation: "Tags", Scope: notDeleted},
+		common.Preload{Relation: "Variants"},
+		common.Preload{Relation: "Variants.Color", Scope: notDeleted},
+		common.Preload{Relation: "Variants.Size", Scope: notDeleted},
+		common.Preload{Relation: "Variants.Inventory"},
+		common.Preload{Relation: "Images"},
+		common.Preload{Relation: "Images.Color", Scope: notDeleted})
 }
 
 func (r *productRepositoryImpl) ExistsByID(ctx context.Context, id string) (bool, error) {
@@ -99,11 +99,11 @@ func (r *productRepositoryImpl) Delete(ctx context.Context, id string) error {
 }
 
 func (r *productRepositoryImpl) FindDeletedByIDWithImages(ctx context.Context, id string) (*model.Product, error) {
-	return findByIDBase(ctx, r.db, id, true, nil, &common.Preload{Relation: "Images"})
+	return findByIDBase(ctx, r.db, id, true, nil, common.Preload{Relation: "Images"})
 }
 
 func (r *productRepositoryImpl) FindAllDeletedByIDWithImages(ctx context.Context, ids []string) ([]*model.Product, error) {
-	return r.findAllByIDBase(ctx, ids, true, "Images")
+	return findAllByIDBase(ctx, r.db, ids, true, "Images")
 }
 
 func (r *productRepositoryImpl) DeleteAllByID(ctx context.Context, ids []string) error {
@@ -111,7 +111,7 @@ func (r *productRepositoryImpl) DeleteAllByID(ctx context.Context, ids []string)
 }
 
 func (r *productRepositoryImpl) FindAllDeletedByID(ctx context.Context, ids []string) ([]*model.Product, error) {
-	return r.findAllByIDBase(ctx, ids, true)
+	return findAllByIDBase(ctx, r.db, ids, true)
 }
 
 func (r *productRepositoryImpl) UpdateCategoriesTx(ctx context.Context, tx *gorm.DB, product *model.Product, categories []*model.Category) error {
@@ -120,8 +120,8 @@ func (r *productRepositoryImpl) UpdateCategoriesTx(ctx context.Context, tx *gorm
 
 func (r *productRepositoryImpl) FindByIDWithCategoriesAndTags(ctx context.Context, id string) (*model.Product, error) {
 	return findByIDBase(ctx, r.db, id, false, nil,
-		&common.Preload{Relation: "Categories"},
-		&common.Preload{Relation: "Tags"})
+		common.Preload{Relation: "Categories"},
+		common.Preload{Relation: "Tags"})
 }
 
 func (r *productRepositoryImpl) UpdateTagsTx(ctx context.Context, tx *gorm.DB, product *model.Product, tags []*model.Tag) error {
@@ -145,7 +145,7 @@ func (r *productRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id st
 }
 
 func (r *productRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]*model.Product, error) {
-	return r.findAllByIDBase(ctx, ids, false)
+	return findAllByIDBase(ctx, r.db, ids, false)
 }
 
 func (r *productRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, updateData map[string]any) error {
@@ -153,29 +153,29 @@ func (r *productRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string,
 }
 
 func (r *productRepositoryImpl) FindAllDeletedPaginatedWithCategoriesAndThumbnail(ctx context.Context, query common.PaginationQuery) ([]*model.Product, int64, error) {
-	return r.findAllPaginatedBase(ctx, true, query,
-		&common.Preload{Relation: "Categories"},
-		&common.Preload{Relation: "Images", Scope: getThumbnail})
+	return findAllPaginatedBase(ctx, r.db, true, query,
+		common.Preload{Relation: "Categories"},
+		common.Preload{Relation: "Images", Scope: getThumbnail})
 }
 
 func (r *productRepositoryImpl) FindAllPaginatedWithCategoriesAndThumbnail(ctx context.Context, query common.PaginationQuery) ([]*model.Product, int64, error) {
-	return r.findAllPaginatedBase(ctx, false, query,
-		&common.Preload{Relation: "Categories"},
-		&common.Preload{Relation: "Images", Scope: getThumbnail})
+	return findAllPaginatedBase(ctx, r.db, false, query,
+		common.Preload{Relation: "Categories"},
+		common.Preload{Relation: "Images", Scope: getThumbnail})
 }
 
 func (r *productRepositoryImpl) FindByIDWithCategoriesAndTagsTx(ctx context.Context, tx *gorm.DB, id string) (*model.Product, error) {
 	return findByIDBase(ctx, tx, id, false,
 		&common.Locking{Strength: clause.LockingStrengthUpdate, Options: clause.LockingOptionsNoWait},
-		&common.Preload{Relation: "Categories"},
-		&common.Preload{Relation: "Tags"})
+		common.Preload{Relation: "Categories"},
+		common.Preload{Relation: "Tags"})
 }
 
-func (r *productRepositoryImpl) findAllPaginatedBase(ctx context.Context, isDeleted bool, pQuery common.PaginationQuery, preloads ...*common.Preload) ([]*model.Product, int64, error) {
+func findAllPaginatedBase(ctx context.Context, tx *gorm.DB, isDeleted bool, pQuery common.PaginationQuery, preloads ...common.Preload) ([]*model.Product, int64, error) {
 	var products []*model.Product
 	var total int64
 
-	query := r.db.WithContext(ctx).Model(&model.Product{})
+	query := tx.WithContext(ctx).Model(&model.Product{})
 	for _, preload := range preloads {
 		if preload.Scope != nil {
 			query = query.Preload(preload.Relation, preload.Scope)
@@ -185,13 +185,13 @@ func (r *productRepositoryImpl) findAllPaginatedBase(ctx context.Context, isDele
 	}
 
 	db := query.Where("is_deleted = ?", isDeleted)
-	db = r.applyFilters(db, pQuery)
+	db = applyFilters(db, pQuery)
 
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	db = r.applySorting(db, pQuery)
+	db = applySorting(db, pQuery)
 
 	offset := (pQuery.Page - 1) * pQuery.Limit
 	if err := db.Offset(offset).Limit(pQuery.Limit).Find(&products).Error; err != nil {
@@ -201,14 +201,14 @@ func (r *productRepositoryImpl) findAllPaginatedBase(ctx context.Context, isDele
 	return products, total, nil
 }
 
-func (r *productRepositoryImpl) applyFilters(db *gorm.DB, query common.PaginationQuery) *gorm.DB {
+func applyFilters(db *gorm.DB, query common.PaginationQuery) *gorm.DB {
 	if query.Search != "" {
 		searchTerm := "%" + strings.ToLower(query.Search) + "%"
 		db = db.Where("LOWER(title) LIKE ?", searchTerm)
 	}
 
 	if query.CategoryID != "" {
-		db = db.Where("id IN (?)", r.db.Table("product_categories pc").Select("pc.product_id").Joins("JOIN categories c ON c.id = pc.category_id").Where("c.id = ?", query.CategoryID))
+		db = db.Where("id IN (?)", db.Table("product_categories pc").Select("pc.product_id").Joins("JOIN categories c ON c.id = pc.category_id").Where("c.id = ?", query.CategoryID))
 	}
 
 	if query.IsActive != nil {
@@ -218,7 +218,7 @@ func (r *productRepositoryImpl) applyFilters(db *gorm.DB, query common.Paginatio
 	return db
 }
 
-func (r *productRepositoryImpl) applySorting(db *gorm.DB, query common.PaginationQuery) *gorm.DB {
+func applySorting(db *gorm.DB, query common.PaginationQuery) *gorm.DB {
 	if query.Sort == "" {
 		query.Sort = "created_at"
 	}
@@ -242,9 +242,9 @@ func (r *productRepositoryImpl) applySorting(db *gorm.DB, query common.Paginatio
 	return db
 }
 
-func (r *productRepositoryImpl) findAllByIDBase(ctx context.Context, ids []string, isDeleted bool, preloads ...string) ([]*model.Product, error) {
+func findAllByIDBase(ctx context.Context, tx *gorm.DB, ids []string, isDeleted bool, preloads ...string) ([]*model.Product, error) {
 	var products []*model.Product
-	query := r.db.WithContext(ctx)
+	query := tx.WithContext(ctx)
 
 	for _, preload := range preloads {
 		query = query.Preload(preload)
@@ -257,9 +257,9 @@ func (r *productRepositoryImpl) findAllByIDBase(ctx context.Context, ids []strin
 	return products, nil
 }
 
-func (r *productRepositoryImpl) findBySlugBase(ctx context.Context, slug string, preloads ...string) (*model.Product, error) {
+func findBySlugBase(ctx context.Context, tx *gorm.DB, slug string, preloads ...string) (*model.Product, error) {
 	var product model.Product
-	query := r.db.WithContext(ctx)
+	query := tx.WithContext(ctx)
 
 	for _, preload := range preloads {
 		query = query.Preload(preload)
@@ -275,7 +275,7 @@ func (r *productRepositoryImpl) findBySlugBase(ctx context.Context, slug string,
 	return &product, nil
 }
 
-func findByIDBase(ctx context.Context, tx *gorm.DB, id string, isDeleted bool, locking *common.Locking, preloads ...*common.Preload) (*model.Product, error) {
+func findByIDBase(ctx context.Context, tx *gorm.DB, id string, isDeleted bool, locking *common.Locking, preloads ...common.Preload) (*model.Product, error) {
 	var product model.Product
 	query := tx.WithContext(ctx)
 

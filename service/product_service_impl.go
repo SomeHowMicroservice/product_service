@@ -1007,30 +1007,30 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 			return common.ErrProductNotFound
 		}
 
-		updateProductData := map[string]any{}
+		updateData := map[string]any{}
 		if req.Title != nil && *req.Title != product.Title {
-			updateProductData["title"] = req.Title
-			updateProductData["slug"] = common.GenerateSlug(*req.Title)
+			updateData["title"] = req.Title
+			updateData["slug"] = common.GenerateSlug(*req.Title)
 		}
 		if req.Description != nil && *req.Description != product.Description {
-			updateProductData["description"] = req.Description
+			updateData["description"] = req.Description
 		}
 		if req.Price != nil && *req.Price != product.Price {
-			updateProductData["price"] = req.Price
+			updateData["price"] = req.Price
 		}
 		if req.IsActive != nil && *req.IsActive != product.IsActive {
-			updateProductData["is_active"] = req.IsActive
+			updateData["is_active"] = req.IsActive
 		}
 		if req.IsSale != nil && *req.IsSale != product.IsSale {
 			if !*req.IsSale {
-				updateProductData["sale_price"] = nil
-				updateProductData["start_sale"] = nil
-				updateProductData["end_sale"] = nil
+				updateData["sale_price"] = nil
+				updateData["start_sale"] = nil
+				updateData["end_sale"] = nil
 			}
-			updateProductData["is_sale"] = req.IsSale
+			updateData["is_sale"] = req.IsSale
 		}
 		if req.SalePrice != nil && product.SalePrice != req.SalePrice {
-			updateProductData["sale_price"] = req.SalePrice
+			updateData["sale_price"] = req.SalePrice
 		}
 		if req.StartSale != nil {
 			parsedStartSale, err := common.ParseDate(*req.StartSale)
@@ -1038,7 +1038,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 				return fmt.Errorf("chuyển đổi kiểu dữ liệu thời gian bắt đầu giảm giá thất bại: %w", err)
 			}
 			if product.StartSale == nil || !parsedStartSale.Equal(*product.StartSale) {
-				updateProductData["start_sale"] = parsedStartSale
+				updateData["start_sale"] = parsedStartSale
 			}
 		}
 		if req.EndSale != nil {
@@ -1047,15 +1047,15 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 				return fmt.Errorf("chuyển đổi kiểu dữ liệu thời gian kết thúc giảm giá thất bại: %w", err)
 			}
 			if product.EndSale == nil || !parsedEndSale.Equal(*product.EndSale) {
-				updateProductData["end_sale"] = parsedEndSale
+				updateData["end_sale"] = parsedEndSale
 			}
 		}
 		if req.UserId != product.UpdatedByID {
-			updateProductData["updated_by_id"] = req.UserId
+			updateData["updated_by_id"] = req.UserId
 		}
 
-		if len(updateProductData) > 0 {
-			if err = s.productRepo.UpdateTx(ctx, tx, product.ID, updateProductData); err != nil {
+		if len(updateData) > 0 {
+			if err = s.productRepo.UpdateTx(ctx, tx, product.ID, updateData); err != nil {
 				if isUniqueViolation(err) {
 					return common.ErrSlugAlreadyExists
 				}
@@ -1066,7 +1066,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 		if len(req.CategoryIds) > 0 {
 			categoryIDs := getIDsFromCategories(product.Categories)
 			if !slices.Equal(req.CategoryIds, categoryIDs) {
-				categories, err := s.categoryRepo.FindAllByIDWithChildren(ctx, req.CategoryIds)
+				categories, err := s.categoryRepo.FindAllByIDWithChildrenTx(ctx, tx, req.CategoryIds)
 				if err != nil {
 					return fmt.Errorf("tìm kiếm danh mục sản phẩm thất bại: %w", err)
 				}
@@ -1089,7 +1089,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 		if len(req.TagIds) > 0 {
 			tagIDs := getIDsFromTags(product.Tags)
 			if !slices.Equal(tagIDs, req.TagIds) {
-				tags, err := s.tagRepo.FindAllByID(ctx, req.TagIds)
+				tags, err := s.tagRepo.FindAllByIDTx(ctx, tx, req.TagIds)
 				if err != nil {
 					return fmt.Errorf("tìm kiếm tag sản phẩm thất bại: %w", err)
 				}
@@ -1105,7 +1105,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 		}
 
 		if len(req.DeleteVariantIds) > 0 {
-			variants, err := s.variantRepo.FindAllByID(ctx, req.DeleteVariantIds)
+			variants, err := s.variantRepo.FindAllByIDTx(ctx, tx, req.DeleteVariantIds)
 			if err != nil {
 				return fmt.Errorf("lấy danh sách danh mục sản phẩm thất bại: %w", err)
 			}
@@ -1119,7 +1119,34 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 		}
 
 		if len(req.UpdateVariants) > 0 {
+			variantIDs := make([]string, 0, len(req.UpdateVariants))
+			for _, v := range req.UpdateVariants {
+				variantIDs = append(variantIDs, v.Id)
+			}
+
+			variants, err := s.variantRepo.FindAllByIDWithInventoryTx(ctx, tx, variantIDs)
+			if err != nil {
+				return fmt.Errorf("lấy danh sách thuộc tính sản phẩm chỉnh sửa thất bại: %w", err)
+			}
+			if len(variantIDs) != len(variants) {
+				return common.ErrHasVariantNotFound
+			}
+
+			varMap := make(map[string]*model.Variant)
+			for _, variant := range variants {
+				varMap[variant.ID] = variant
+			}
+
 			for _, variant := range req.UpdateVariants {
+				v, ok := varMap[variant.Id]
+				if !ok {
+					return fmt.Errorf("không tìm thấy kho cho variant %s", variant.Id)
+				}
+
+				if variant.Quantity != nil && *variant.Quantity < int64(v.Inventory.SoldQuantity) {
+					return fmt.Errorf("số lượng mới (%d) nhỏ hơn số lượng đã bán (%d) của variant %s", *variant.Quantity, v.Inventory.SoldQuantity, variant.Id)
+				}
+
 				updateData := map[string]any{}
 				if variant.Sku != nil {
 					updateData["sku"] = variant.Sku
@@ -1158,7 +1185,6 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 
 		if len(req.NewVariants) > 0 {
 			newVariants := make([]*model.Variant, 0, len(req.NewVariants))
-
 			for _, v := range req.NewVariants {
 				variant := &model.Variant{
 					ID:        uuid.NewString(),
@@ -1184,7 +1210,7 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 		}
 
 		if len(req.DeleteImageIds) > 0 {
-			images, err := s.imageRepo.FindAllByID(ctx, req.DeleteImageIds)
+			images, err := s.imageRepo.FindAllByIDTx(ctx, tx, req.DeleteImageIds)
 			if err != nil {
 				return fmt.Errorf("tìm kiếm danh sách hình ảnh thất bại: %w", err)
 			}
@@ -1216,6 +1242,19 @@ func (s *productServiceImpl) UpdateProduct(ctx context.Context, req *productpb.U
 		}
 
 		if len(req.UpdateImages) > 0 {
+			imgIDs := make([]string, 0, len(req.UpdateImages))
+			for _, img := range req.UpdateImages {
+				imgIDs = append(imgIDs, img.Id)
+			}
+
+			imgs, err := s.imageRepo.FindAllByIDTx(ctx, tx, imgIDs) 
+			if err != nil {
+				return fmt.Errorf("lấy danh sách hình ảnh sản phẩm chỉnh sửa thất bại: %w", err)
+			}
+			if len(imgs) != len(imgIDs) {
+				return common.ErrHasImageNotFound
+			}
+
 			for _, image := range req.UpdateImages {
 				updateData := map[string]any{}
 				if image.IsThumbnail != nil {

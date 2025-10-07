@@ -20,9 +20,9 @@ func (r *imageRepositoryImpl) CreateAllTx(ctx context.Context, tx *gorm.DB, imag
 	return tx.WithContext(ctx).Create(&images).Error
 }
 
-func (r *imageRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]*model.Image, error) {
+func (r *imageRepositoryImpl) FindAllByIDTx(ctx context.Context, tx *gorm.DB, ids []string) ([]*model.Image, error) {
 	var images []*model.Image
-	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&images).Error; err != nil {
+	if err := tx.WithContext(ctx).Where("id IN ?", ids).Find(&images).Error; err != nil {
 		return nil, err
 	}
 

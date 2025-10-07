@@ -23,11 +23,11 @@ func (r *categoryRepositoryImpl) Create(ctx context.Context, category *model.Cat
 }
 
 func (r *categoryRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]*model.Category, error) {
-	return r.findAllByIDBase(ctx, r.db, ids)
+	return findAllByIDBase(ctx, r.db, ids)
 }
 
 func (r *categoryRepositoryImpl) FindAllByIDWithChildren(ctx context.Context, ids []string) ([]*model.Category, error) {
-	return r.findAllByIDBase(ctx, r.db, ids, "Children")
+	return findAllByIDBase(ctx, r.db, ids, "Children")
 }
 
 func (r *categoryRepositoryImpl) ExistsBySlug(ctx context.Context, slug string) (bool, error) {
@@ -53,26 +53,26 @@ func (r *categoryRepositoryImpl) ExistsByID(ctx context.Context, id string) (boo
 }
 
 func (r *categoryRepositoryImpl) FindByID(ctx context.Context, id string) (*model.Category, error) {
-	return r.findByIDBase(ctx, r.db, id, nil)
+	return findByIDBase(ctx, r.db, id, nil)
 }
 
 func (r *categoryRepositoryImpl) FindAllWithParentsAndChildren(ctx context.Context) ([]*model.Category, error) {
-	return r.findAllBase(ctx, "Parents", "Children")
+	return findAllBase(ctx, r.db, "Parents", "Children")
 }
 
 func (r *categoryRepositoryImpl) FindAllWithProducts(ctx context.Context) ([]*model.Category, error) {
-	return r.findAllBase(ctx, "Products")
+	return findAllBase(ctx, r.db, "Products")
 }
 
 func (r *categoryRepositoryImpl) FindAll(ctx context.Context) ([]*model.Category, error) {
-	return r.findAllBase(ctx)
+	return findAllBase(ctx, r.db)
 }
 
 func (r *categoryRepositoryImpl) FindByIDWithParentsAndProducts(ctx context.Context, id string) (*model.Category, error) {
-	return r.findByIDBase(ctx, r.db, id, nil,
-		&common.Preload{Relation: "Parents"},
-		&common.Preload{Relation: "Products"},
-		&common.Preload{Relation: "Products.Images", Scope: getThumbnail})
+	return findByIDBase(ctx, r.db, id, nil,
+		common.Preload{Relation: "Parents"},
+		common.Preload{Relation: "Products"},
+		common.Preload{Relation: "Products.Images", Scope: getThumbnail})
 }
 
 func (r *categoryRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
@@ -80,7 +80,7 @@ func (r *categoryRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id s
 }
 
 func (r *categoryRepositoryImpl) FindByIDWithParents(ctx context.Context, id string) (*model.Category, error) {
-	return r.findByIDBase(ctx, r.db, id, nil, &common.Preload{Relation: "Parents"})
+	return findByIDBase(ctx, r.db, id, nil, common.Preload{Relation: "Parents"})
 }
 
 func (r *categoryRepositoryImpl) UpdateParentsTx(ctx context.Context, tx *gorm.DB, category *model.Category, parents []*model.Category) error {
@@ -88,11 +88,15 @@ func (r *categoryRepositoryImpl) UpdateParentsTx(ctx context.Context, tx *gorm.D
 }
 
 func (r *categoryRepositoryImpl) FindAllWithChildren(ctx context.Context) ([]*model.Category, error) {
-	return r.findAllBase(ctx, "Children")
+	return findAllBase(ctx, r.db, "Children")
+}
+
+func (r *categoryRepositoryImpl) FindAllByIDWithChildrenTx(ctx context.Context, tx *gorm.DB, ids []string) ([]*model.Category, error) {
+	return findAllByIDBase(ctx, tx, ids, "Children")
 }
 
 func (r *categoryRepositoryImpl) FindAllByIDTx(ctx context.Context, tx *gorm.DB, ids []string) ([]*model.Category, error) {
-	return r.findAllByIDBase(ctx, tx, ids)
+	return findAllByIDBase(ctx, tx, ids)
 }
 
 func (r *categoryRepositoryImpl) DeleteAllByID(ctx context.Context, ids []string) error {
@@ -112,9 +116,9 @@ func (r *categoryRepositoryImpl) Delete(ctx context.Context, id string) error {
 }
 
 func (r *categoryRepositoryImpl) FindByIDWithParentsTx(ctx context.Context, tx *gorm.DB, id string) (*model.Category, error) {
-	return r.findByIDBase(ctx, tx, id,
+	return findByIDBase(ctx, tx, id,
 		&common.Locking{Strength: clause.LockingStrengthUpdate, Options: clause.LockingOptionsNoWait},
-		&common.Preload{Relation: "Parents"})
+		common.Preload{Relation: "Parents"})
 }
 
 func (r *categoryRepositoryImpl) GetAllAncestors(ctx context.Context, id string) ([]string, error) {
@@ -159,7 +163,7 @@ func (r *categoryRepositoryImpl) GetAllDescendants(ctx context.Context, id strin
 	return descendants, nil
 }
 
-func (r *categoryRepositoryImpl) findByIDBase(ctx context.Context, tx *gorm.DB, id string, looking *common.Locking, preloads ...*common.Preload) (*model.Category, error) {
+func findByIDBase(ctx context.Context, tx *gorm.DB, id string, looking *common.Locking, preloads ...common.Preload) (*model.Category, error) {
 	var category model.Category
 	query := tx.WithContext(ctx)
 
@@ -185,9 +189,9 @@ func (r *categoryRepositoryImpl) findByIDBase(ctx context.Context, tx *gorm.DB, 
 	return &category, nil
 }
 
-func (r *categoryRepositoryImpl) findAllBase(ctx context.Context, preloads ...string) ([]*model.Category, error) {
+func findAllBase(ctx context.Context, tx *gorm.DB, preloads ...string) ([]*model.Category, error) {
 	var categories []*model.Category
-	query := r.db.WithContext(ctx)
+	query := tx.WithContext(ctx)
 
 	for _, preload := range preloads {
 		query = query.Preload(preload)
@@ -200,7 +204,7 @@ func (r *categoryRepositoryImpl) findAllBase(ctx context.Context, preloads ...st
 	return categories, nil
 }
 
-func (r *categoryRepositoryImpl) findAllByIDBase(ctx context.Context, tx *gorm.DB, ids []string, preloads ...string) ([]*model.Category, error) {
+func findAllByIDBase(ctx context.Context, tx *gorm.DB, ids []string, preloads ...string) ([]*model.Category, error) {
 	var categories []*model.Category
 	query := tx.WithContext(ctx)
 

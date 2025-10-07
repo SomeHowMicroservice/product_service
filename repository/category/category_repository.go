@@ -16,6 +16,8 @@ type CategoryRepository interface {
 
 	FindAllByIDWithChildren(ctx context.Context, ids []string) ([]*model.Category, error)
 
+	FindAllByIDWithChildrenTx(ctx context.Context, tx *gorm.DB, ids []string) ([]*model.Category, error)
+
 	FindAllWithProducts(ctx context.Context) ([]*model.Category, error)
 
 	ExistsByID(ctx context.Context, id string) (bool, error)

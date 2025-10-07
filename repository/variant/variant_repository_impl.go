@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/SomeHowMicroservice/product/common"
 	"github.com/SomeHowMicroservice/product/model"
 	"gorm.io/gorm"
 )
@@ -32,13 +33,12 @@ func (r *variantRepositoryImpl) ExistsBySKU(ctx context.Context, sku string) (bo
 	return count > 0, nil
 }
 
-func (r *variantRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]*model.Variant, error) {
-	var variants []*model.Variant
-	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&variants).Error; err != nil {
-		return nil, err
-	}
+func (r *variantRepositoryImpl) FindAllByIDTx(ctx context.Context, tx *gorm.DB, ids []string) ([]*model.Variant, error) {
+	return findAllByIDBase(ctx, tx, ids)
+}
 
-	return variants, nil
+func (r *variantRepositoryImpl) FindAllByIDWithInventoryTx(ctx context.Context, tx *gorm.DB, ids []string) ([]*model.Variant, error) {
+	return findAllByIDBase(ctx, tx, ids, common.Preload{Relation: "Inventory"})
 }
 
 func (r *variantRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id string, updateData map[string]any) error {
@@ -47,4 +47,23 @@ func (r *variantRepositoryImpl) UpdateTx(ctx context.Context, tx *gorm.DB, id st
 
 func (r *variantRepositoryImpl) DeleteAllByIDTx(ctx context.Context, tx *gorm.DB, ids []string) error {
 	return tx.WithContext(ctx).Where("id IN ?", ids).Delete(&model.Variant{}).Error
+}
+
+func findAllByIDBase(ctx context.Context, tx *gorm.DB, ids []string, preloads ...common.Preload) ([]*model.Variant, error) {
+	var variants []*model.Variant
+	query := tx.WithContext(ctx)
+
+	for _, preload := range preloads {
+		if preload.Scope != nil {
+			query = query.Preload(preload.Relation, preload.Scope)
+		} else {
+			query = query.Preload(preload.Relation)
+		}
+	}
+
+	if err := query.Where("id IN ?", ids).Find(&variants).Error; err != nil {
+		return nil, err
+	}
+
+	return variants, nil
 }

@@ -24,6 +24,8 @@ type TagRepository interface {
 
 	FindAllByID(ctx context.Context, ids []string) ([]*model.Tag, error)
 
+	FindAllByIDTx(ctx context.Context, tx *gorm.DB, ids []string) ([]*model.Tag, error)
+
 	FindAllDeleted(ctx context.Context) ([]*model.Tag, error)
 
 	FindDeletedByID(ctx context.Context, id string) (*model.Tag, error)

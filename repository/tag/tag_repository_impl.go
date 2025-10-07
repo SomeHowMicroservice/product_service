@@ -69,8 +69,12 @@ func (r *tagRepositoryImpl) UpdateAllByID(ctx context.Context, ids []string, upd
 }
 
 func (r *tagRepositoryImpl) FindAllByID(ctx context.Context, ids []string) ([]*model.Tag, error) {
+	return r.FindAllByIDTx(ctx, r.db, ids)
+}
+
+func (r *tagRepositoryImpl) FindAllByIDTx(ctx context.Context, tx *gorm.DB, ids []string) ([]*model.Tag, error) {
 	var tags []*model.Tag
-	if err := r.db.WithContext(ctx).Where("id IN ? AND is_deleted = false", ids).Find(&tags).Error; err != nil {
+	if err := tx.WithContext(ctx).Where("id IN ? AND is_deleted = false", ids).Find(&tags).Error; err != nil {
 		return nil, err
 	}
 
